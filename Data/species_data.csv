@@ -1,0 +1,16 @@
+﻿Binomial,Genus,Species,Organ,Min_depth,Max_depth,Depth_range,Eye_diameter,Body_length,Relative_size
+7319_P_armatus,Parasergestes ,armatus,pesta,0,850,850,0.748666667,30.636,0.024437481
+7184_S_atlanticus,Sergestes,atlanticus,pesta,0,2000,2000,0.818,25.43933333,0.032154931
+4670_D_corniculum,Deosergestes,corniculum,pesta,50,2000,1950,1.066111111,48.59166667,0.021940205
+8244_N_edwardsii,Neosergestes,edwardsii,pesta,0,1000,1000,0.632857143,16.89,0.037469339
+7200_P_grandis,Phorcosergia,grandis,unlensed,30,2300,2270,1.528823529,56.06803922,0.027267291
+7173_C_hansjacobi,Challengerosergia,hansjacobi,lensed,30,1700,1670,1.167674419,33.33511628,0.035028359
+4814_D_henseni,Deosergestes,henseni,pesta,0,1500,1500,1.041034483,40.4337931,0.025746644
+8315_A_pectinatus,Allosergestes,pectinatus,pesta,0,1300,1300,0.523571429,19.98,0.026204776
+7283_R_regalis,Robustosergia,regalis,unlensed,100,2000,1900,1.443947368,45.05657895,0.032047426
+6934_R_robusta,Robustasergia,robusta,unlensed,0,2300,2300,1.84826087,57.63304348,0.032069465
+8305_A_sargassi,Allosergestes,sargassi,pesta,0,900,900,0.662631579,23.82078947,0.027817364
+8009_G_splendens,Gardinerosergia,splendens,unlensed,20,2000,1980,1.187380952,33.03714286,0.035940788
+8366_H_talismani,Challengerosergia,talismani,lensed,20,2000,1980,1.1346875,37.1440625,0.030548287
+7292_S_tenuiremis,Sergia,tenuiremis,none,300,2000,1700,1.259285714,45.35821429,0.027763124
+8285_P_vigilax,Parasergestes,vigilax,pesta,0,950,950,0.55,19.12,0.02876569
