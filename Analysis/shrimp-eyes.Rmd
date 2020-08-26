@@ -205,7 +205,7 @@ ggplotly(plot_apec)
 
 ### _Allosergestes sargassi_
 
-**Note: this species has a big outlier that's worth checking in the original data**
+**Note: this species has a big outlier that we are thinking we should remove. Measured onboard ship, no way to check data**
 
 ```{r dev-asar}
 
@@ -845,7 +845,7 @@ dev.off()
 
 The plots here are scaled to fit the data, so they all look similar but the slopes are actually quite variable and I think pretty interesting. This could be worth exploring for a chunk of the paper, and we might consider examining variation in developmental scaling slopes as a factor of phylogeny and things like whether each species exhibits ontogenetic descent. 
 
-## Test whether species differ in developmental allometry
+## Test whether species differ in ontogenetic allometry
 
 The smatr package also allows you to test whether groups exhibit significant differences in allometric scaling (slopes or intercepts). Below, we again use standardized major axis regression to model the scaling of eye diameter with body length across all specimens measured and test whether we see significant differences in developmental scaling across species. This is a bit redundant with above, but will provide statistical evidence of the (very big) difference in slopes among species. 
 
@@ -963,6 +963,23 @@ plot_species
 dev.off()
 ```
 
+## Test for effect of preservation
+
+As one additional possible test to see if preservation type affects allometric fits, I've included a linear model here that has all of the specimen data and fits a regression of eye size vs. body size with both species and preservation type as covariates (and looks for an interaction effect). Specifically, this tests whether preservation type (fresh, ethanol, paraformaldehyde) has an effect on eye size, and whether this differs across species.
+
+```{r pres-smas}
+
+# Model for developmental scaling across specimens * species * preservation
+lm_pres <- lm(formula = Eye_Diameter ~ Body_Length * genus_species * Preservation, data = specimens_sma) 
+
+#view regression estimates and t-tests
+summary(lm_pres)
+
+#view anova table (see effects of variables)
+anova(lm_pres)
+```
+
+The ANOVA table shows that, as we knew, body length, species, and their interaction all have significant effects on eye size (this is due to species specific patterns of ontogenetic scaling). However, preservation also has a significant effect (p=0.0001), as does the interaction between species and preservation (p = 0.005). This indicates that we should probably consider preservation error in our analyses, or that we may want to try to correct for any shrinkage in our data prior to analyses. 
 
 ## Phylogenetic distribution of allometric slopes
 
@@ -1262,7 +1279,7 @@ Visual inspection of the data shows that absolute eye size does seem to increase
 ```{r depth-viz}
 
 # Absolute eye size by max depth ------
-plot_abs_max <- ggplot(species.phy, aes(x = Eye_diameter, y = Max_depth, text = genus_species)) + 
+plot_abs_max <- ggplot(species.phy, aes(x = Eye_diameter, y = Max, text = genus_species)) + 
   geom_point(size = 2, alpha = 0.6) + 
   scale_y_reverse(name = "Maximum depth (m)") + #makes x axis log scale and named
   scale_x_log10(name = "Eye diameter (mm)") + #makes y axis log scale and named
@@ -1272,7 +1289,7 @@ plot_abs_max <- ggplot(species.phy, aes(x = Eye_diameter, y = Max_depth, text = 
 ggplotly(plot_abs_max)
 
 # Body size with max depth -----
-plot_body_max <- ggplot(species.phy, aes(x = Body_length, y = Max_depth, text = genus_species)) + 
+plot_body_max <- ggplot(species.phy, aes(x = Body_length, y = Max, text = genus_species)) + 
   geom_point(size = 2, alpha = 0.6) + 
   scale_y_reverse(name = "Maximum depth (m)") + #makes x axis log scale and named
   scale_x_log10(name = "Body length (mm)") + #makes y axis log scale and named
@@ -1282,7 +1299,7 @@ plot_body_max <- ggplot(species.phy, aes(x = Body_length, y = Max_depth, text = 
 ggplotly(plot_body_max)
 
 # Eye size/body size with max depth -----
-plot_eb_max <- ggplot(species.phy, aes(x = Relative_size, y = Max_depth, text = genus_species)) + 
+plot_eb_max <- ggplot(species.phy, aes(x = Relative_size, y = Max, text = genus_species)) + 
   geom_point(size = 2, alpha = 0.6) + 
   scale_y_reverse(name = "Maximum depth (m)") + #makes x axis log scale and named
   scale_x_log10(name = "Eye:body") + #makes y axis log scale and named
@@ -1292,7 +1309,7 @@ plot_eb_max <- ggplot(species.phy, aes(x = Relative_size, y = Max_depth, text = 
 ggplotly(plot_eb_max)
 
 # Relative eye investment by max depth -----
-plot_inv_max <- ggplot(species.phy, aes(x = eyefactor, y = Max_depth, text = genus_species)) + 
+plot_inv_max <- ggplot(species.phy, aes(x = eyefactor, y = Max, text = genus_species)) + 
   geom_point(size = 2, alpha = 0.6) + 
   scale_y_reverse(name = "Maximum depth (m)") + #makes x axis log scale and named
   scale_x_log10(name = "Relative eye investment") + #makes y axis log scale and named
@@ -1302,7 +1319,7 @@ plot_inv_max <- ggplot(species.phy, aes(x = eyefactor, y = Max_depth, text = gen
 ggplotly(plot_inv_max)
 
 # Absolute eye size by depth range -----
-plot_abs_range <- ggplot(species.phy, aes(x = Eye_diameter, y = Depth_range, text = genus_species)) + 
+plot_abs_range <- ggplot(species.phy, aes(x = Eye_diameter, y = (Max - Min), text = genus_species)) + 
   geom_point(size = 2, alpha = 0.6) + 
   scale_y_reverse(name = "Depth range (m)") + #makes x axis log scale and named
   scale_x_log10(name = "Eye diameter (mm)") + #makes y axis log scale and named
@@ -1312,7 +1329,7 @@ plot_abs_range <- ggplot(species.phy, aes(x = Eye_diameter, y = Depth_range, tex
 ggplotly(plot_abs_range)
 
 # Relative eye investment by depth range -----
-plot_inv_range <- ggplot(species.phy, aes(x = eyefactor, y = Depth_range, text = genus_species)) + 
+plot_inv_range <- ggplot(species.phy, aes(x = eyefactor, y = (Max - Min), text = genus_species)) + 
   geom_point(size = 2, alpha = 0.6) + 
   scale_y_reverse(name = "Depth range (m)") + #makes x axis log scale and named
   scale_x_log10(name = "Relative eye investment") + #makes y axis log scale and named
@@ -1326,7 +1343,7 @@ ggplotly(plot_inv_range)
 
 #add column for midpoint of depth range
 species.phy <- species.phy %>%
-  mutate(depth_mid = ((Max_depth - Min_depth)/2) + Min_depth)
+  mutate(depth_mid = ((Max - Min)/2) + Min)
 
 #plot
 plot_abs_mid <- ggplot(species.phy, aes(x = Eye_diameter, y = depth_mid, text = genus_species)) + 
@@ -1400,7 +1417,7 @@ Below, I run a PGLS model of klg10(eye diameter) vs. log10(body length) with max
 ```{r pgls-depth}
 
 #run PGLS modelusing the Maximum Liklihood estimate of lambda
-pgls_depth <- pgls(log10(Eye_diameter) ~ log10(Body_length) + Max_depth, 
+pgls_depth <- pgls(log10(Eye_diameter) ~ log10(Body_length) + Max, 
                data = species.comp, 
                lambda = "ML", bounds = list(lambda = c(1e-05, 1)),
                #uses Maximum Liklihood estimate of lambda
@@ -1442,7 +1459,7 @@ Below, I run a PGLS model of log10(eye diameter) vs. log10(body length) with dep
 ```{r pgls-range}
 
 #run PGLS modelusing the Maximum Liklihood estimate of lambda
-pgls_range <- pgls(log10(Eye_diameter) ~ log10(Body_length) + Depth_range, 
+pgls_range <- pgls(log10(Eye_diameter) ~ log10(Body_length) + (Max - Min), 
                data = species.comp, 
                lambda = "ML", bounds = list(lambda = c(1e-05, 1)),
                #uses Maximum Liklihood estimate of lambda
