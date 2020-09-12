@@ -392,6 +392,8 @@ ggplotly(plot_dcor)
 
 ### _Deosergestes henseni_
 
+**Note: There is a data point for this species (eye 0.67, body 12.97) that is identical to one of the outliers I identified for _Allosergestes sargassi_. Seems unlikely to have two identical specimens for both eye diameter and body length to the 0.01 measurement, so have flagged to check in original data. This datapoint looks like sort of an outlier in this species as well, see interactive plot**
+
 ```{r dev-dhen}
 
 # Subset data -----
@@ -885,19 +887,24 @@ The plots here are scaled to fit the data, so they all look similar but the slop
 
 ## Test whether species differ in ontogenetic allometry
 
-The smatr package also allows you to test whether groups exhibit significant differences in allometric scaling (slopes or intercepts). Below, we again use standardized major axis regression to model the scaling of eye diameter with body length across all specimens measured and test whether we see significant differences in developmental scaling across species. This is a bit redundant with above, but will provide statistical evidence of the (very big) difference in slopes among species. 
+We've looked at how eyes scale with body size across species, but are there significant differences in these scaling relationships? The _smatr_ package also allows you to test whether groups exhibit significant differences in allometric scaling (slopes or intercepts). Below, we again use standardized major axis regression to model the scaling of eye diameter with body length across all specimens measured and test whether we see significant differences in developmental scaling across species. This is a bit redundant with above, but will provide statistical evidence of the (very big) difference in slopes among species. 
 
-*Note: As we only have 7 specimens of _Neosergestes edwardsii_ and one is an odd outlier while the other 6 are all very similar in body length, we don't have the power to fit developmental eye-body scaling for that species. Thus, I've removed it from the specimen dataset before fitting this model. 
+*Note: As we did not have sufficient sampling to estimate eye-body allometry for _Neosergestes edwardsii_, I've removed it from the specimen dataset before fitting this model.
 
-This test shows that sergestid species significantly differ in their allometric scaling relationships between eye diameter and body length (p < 0.0001). It also yields a table of pairwise comparisons so you can see exactly which species differ in slope and which do not. 
+This test shows that among N = 445 sergestid speciments, species significantly differ in their allometric scaling relationships between eye diameter and body length (p < 0.0001). It also yields a table of pairwise comparisons so you can see exactly which species differ significantly in slope and which do not. 
 
 ```{r species-smas}
 
-#Filter/prep dataframe
+#Remove outliers from specimen dataset
+specimens_ed <- specimens %>%
+  filter(!(genus_species == "Allosergestes_sargassi" & Eye_Diameter == 0.67 & Body_Length == 12.97)) %>%
+  filter(!(genus_species == "Gardinerosergia_splendens" & Eye_Diameter == 1.71 & Body_Length == 21.98)) %>%
+  filter(!(genus_species == "Neosergestes_edwardsii" & Eye_Diameter == 0.85 & Body_Length == 0.72))
+  
+#Remove Neosergestes edwardsii from dataset for SMA
 specimens_sma <- specimens %>%
-  filter(genus_species != "Neosergestes_edwardsii") %>% # Remove N. edwardsii from specimen data
-  mutate(species_text = as.factor(paste(Genus, Species, sep = " "))) # Add labels for species 
-
+  filter(genus_species != "Neosergestes_edwardsii")
+  
 # Model for developmental scaling across specimens grouped by species
 sma_species <- sma(formula = Eye_Diameter ~ Body_Length * genus_species, 
             data = specimens_sma, 
@@ -921,9 +928,9 @@ summary(sma_species)
 cc_species <- data.frame(coef(sma_species))
 ```
 
-This figure shows the developmental allometry of all the species with sufficient sampling (n = 14). It's interactive, so you can click on different species in the legend to hide or show those points. That can be helpful for exploring patterns in a big mess of data. To me, it looks a bit like smaller-bodied species have higher slopes? That's something we could test for if we wanted to. Here, it looks like _Sergestes atlanticus_, _Allosergestes_pectinatus_, and _Parasergestes vigilax_ have different (higher) slopes compared to the other sergestids, and the other species differ a bit in slopes but more so in intercepts. 
+This figure shows the ontogenetic allometry of all the species with sufficient sampling (n = 14). It's interactive, so you can click on different species in the legend to hide or show those points. That can be helpful for exploring patterns in a big mess of data. To me, it looks a bit like the smaller-bodied species have higher slopes? It looks like _Sergestes atlanticus_, _Allosergestes_pectinatus_, and _Parasergestes vigilax_ have different (higher) slopes compared to the other sergestids, and the other species differ a bit in slopes but more so in intercepts. 
 
-```{r, fig.width=9, fig.height=9}
+```{r species-fig, fig.width=9, fig.height=9}
 #make shape pallette
 shapes.sp <- c("Allosergestes pectinatus" = 21,
               "Allosergestes sargassi" = 22, 
@@ -993,7 +1000,6 @@ plot_species <- ggplot(specimens_sma, aes(x = Body_Length, y = Eye_Diameter, col
 ggplotly(plot_species)
 ```
 
-
 ```{r, results = "hide"}
 #export figure
 png("../Figures/dev-species.png", width = 12, height = 12, units = "in", res = 500)
@@ -1003,25 +1009,24 @@ dev.off()
 
 ## Test for effect of preservation
 
-As one additional possible test to see if preservation type affects allometric fits, I've included a linear model here that has all of the specimen data and fits a regression of eye size vs. body size with both species and preservation type as covariates (and looks for an interaction effect). Specifically, this tests whether preservation type (fresh, ethanol, paraformaldehyde) has an effect on eye size, and whether this differs across species.
+To test whether preservation type affects eye-body allometry, we have used an additional linear model that includes all specimens (n = 451) and species (n = 15). This model its a fits a regression of eye size vs. body size with both species and preservation type as covariates, and looks for an interaction effect between species and preservation. Specifically, this tests whether preservation type (fresh, ethanol, paraformaldehyde) has an effect on eye size, and whether this differs across species.
 
 ```{r pres-smas}
 
 # Model for developmental scaling across specimens * species * preservation
-lm_pres <- lm(formula = Eye_Diameter ~ Body_Length * genus_species * Preservation, data = specimens_sma) 
-
-#view regression estimates and t-tests
-summary(lm_pres)
+lm_pres <- lm(formula = Eye_Diameter ~ Body_Length * genus_species * Preservation, data = specimens_ed) 
 
 #view anova table (see effects of variables)
 anova(lm_pres)
 ```
 
-The ANOVA table shows that, as we knew, body length, species, and their interaction all have significant effects on eye size (this is due to species specific patterns of ontogenetic scaling). However, preservation also has a significant effect (p=0.0001), as does the interaction between species and preservation (p = 0.005). This indicates that we should probably consider preservation error in our analyses, or that we may want to try to correct for any shrinkage in our data prior to analyses. 
+The ANOVA table shows that, as we knew, body length, species, and their interaction all have significant effects on eye size (this indicates species specific patterns of ontogenetic scaling). However, preservation also has a significant effect on eye size (p < 0.0001), as does the interaction between species and preservation (p = 0.005). 
+
+This indicates that we should probably consider preservation error in our analyses, however, since the effect of preservation varies across species and some species have small sample sizes (especially if you break down by preservation type), it is tricky to come up with a correction. My suggestion is that we acknowledge this issue in the results and mention in the discussion how it might affect our interpretations, but also discuss that there does not seem to be a clear, consistent, large-mangitude effect of preservation across our species data plots. 
 
 ## Phylogenetic distribution of allometric slopes
 
-Below, we plot species-specific slopes for developmental allometry onto the sergestid tree to visualize the distribution and variation of the relationships between eye and body size throughout growth. There is potential to do more with these data; do we have predictions for what might drive species differences in developmental allometry? It looks like body size might be one factor, as the smaller-bodied species seem to have higher slopes. Whether species exhibit ontogenetic descent may be another factor to explore? We might predict that species that have ontogenetic descent and are going into dimmer habitats as they grow may invest in higher eye growth relative to body growth. Do all sergestids exhibit ontogenetic descent?
+Below, we plot species-specific slopes for developmental eye-body allometry onto the sergestid tree. There is potential to do more with these data; do we have predictions for what might drive species differences in developmental allometry? It looks like body size might be one factor, as the smaller-bodied species seem to have higher slopes. Whether species exhibit ontogenetic descent may be another factor to explore? We might predict that species that have ontogenetic descent and are going into dimmer habitats as they grow may invest in higher eye growth relative to body growth. Do all sergestids exhibit ontogenetic descent? So far, all I've done with these data in an evolutionary framework is test for phylogenetic signal. Let me know if you think of anything else cool to look at! Maybe we could test whether larger body sizes are correlated with lower slopes? Seemed from the plot of all the species that maybe the smaller bodied species had the higher slopes..
 
 ```{r slope-phylo, results = "hide", fig.width=10, fig.height=7}
 
@@ -1084,18 +1089,42 @@ plotTree.wBars(tree.dev.plot, slope,
 dev.off()
 ```
 
+```{r slope-sig}
+
+#fit Pagel's lambda in caper
+slopes <- data.frame(slope, names(slope))
+mod <- pgls(slope ~ 1, comparative.data(tree.dev.plot, slopes,"names.slope."), lambda="ML")
+
+#summary of model
+summary(mod)
+
+#plot likelihood of lambda
+plot(pgls.profile(mod, "lambda"))
+
+```
+
+A test for phylogenetic signal implemented in _caper_ indicates that the estimate for Pagel's lambda is 0.78. However, this estimate was not significant, and neither the upper or lower bound of the confidence interval could be estimated. This could indicate that there is no phylogenetic signal in these data, but could also be the result of our very small sample size of species for comparative evolutionary models (n = 14). Simulations have previously found that estimating Pagel's lambda for datasets of >20 species is problematic and often unreliable (see Freckleton et al., 2002). 
+
 # Evolutionary eye-body allometry in Sergestidae
 
-We next examine interspecific eye-body allometry across sergestids using species means for eye diameter and body length. Here, we use phylogenetic least-squares regression (using the caper package) to fit the allometric relationship between eye size and body length across 15 species of sergestids.
+We next examine interspecific (evolutionary) eye-body allometry across sergestids using species means for eye diameter and body length. Here, we use phylogenetic least-squares regression (using the _caper_ package) to fit the allometric relationship between species means for eye size and body length across 15 species of sergestids.
 
-*Flagging to discuss calculation of species means with Lori*
+Note: the removal of 3 outlier specimens has likely slightly changed 3 species means from what they are compiled in the spreadsheet you sent. I have recalculated all species means here from the specimen data with outliers removed and used those values for analyses
 
 ```{r evo-pgls, results = "hide"}
+
+#Calculate species means (3 outliers removed)
+sp_means <- specimens_ed %>% 
+  mutate_if(is.character, as.factor) %>% 
+  group_by(genus_species) %>%
+  summarise(eye_av = mean(Eye_Diameter), 
+            length_av = mean(Body_Length), 
+            n = n())
 
 # Prep data ------
 
 #check that names match in dataframe and tree
-name.check(phy = tree, data = species, data.names = species$Binomial)
+name.check(phy = tree, data = sp_means, data.names = species$Binomial)
   
 #set node names to null (or throws duplicate error)
 tree$node.label <- NULL
