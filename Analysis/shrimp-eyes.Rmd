@@ -50,7 +50,7 @@ Morphological measurements (eye diameter and body length) were taken from a mixt
 
 ```{r import-data}
 
-# Full dataset for ontogenetic allometry ------
+# Full specimen morphology dataset  ------
 
 #import data
 specimens_raw <- data.frame(read.csv("../Data/specimen_data.csv", header=TRUE, na.strings=c("", "NA", " ", stringsAsFactors = FALSE)))
@@ -65,13 +65,13 @@ specimens <- specimens_raw %>%
   mutate(pres_bin = recode_factor(Preservation, "ethanol" = "preserved", "paraformaldehyde" = "preserved", "fresh" = "fresh"))
 
 
-# Species means for evolutionary allometry ------
+# Species traits  ------
 
 #import data
-species_raw <- data.frame(read.csv("../Data/species_data.csv", header=TRUE, na.strings=c("", "NA", " ", stringsAsFactors = FALSE)))
+traits_raw <- data.frame(read.csv("../Data/species_data.csv", header=TRUE, na.strings=c("", "NA", " ", stringsAsFactors = FALSE)))
 
 #tidy data
-species <- species_raw %>%
+traits <- traits_raw %>%
   mutate(Genus = gsub('\\s+', '', Genus)) %>%
   mutate(genus_species = as.factor(paste(Genus, Species, sep = "_"))) 
 
@@ -109,7 +109,7 @@ pat <- paste0('^([^_]+(?:_[^_]+){',n-1,'}).*') #pattern
 tree_edit$tip.label <- sub(pat, '\\1', tree_edit$tip.label) #remove tags from tips
 
 #Make list of taxa to drop (in tree but not in dataset)
-drops <- setdiff(tree_edit$tip.label, as.character(species$Binomial))
+drops <- setdiff(tree_edit$tip.label, as.character(traits$Binomial))
 
 #Drop unwanted tips from phylogeny
 tree.pruned <- drop.tip(phy = tree_edit, tip = drops) 
@@ -120,13 +120,13 @@ is.binary.tree(tree.pruned)
 tree <- ladderize(tree.pruned) 
 
 #Make row names of the species the phylogeny tip labels
-rownames(species) <- species$Binomial
+rownames(traits) <- traits$Binomial
 
 #Reorder species data to match phylogeny order
-species <-ReorderData(tree, species, taxa.names="row names")
+traits <-ReorderData(tree, traits, taxa.names="row names")
 
 #check that phylogeny tips and data match exactly (if they match will return "OK")
-name.check(tree, species)
+name.check(tree, traits)
 
 #make tree ultrametric
 tree <- chronopl(tree, 1)
@@ -902,8 +902,9 @@ specimens_ed <- specimens %>%
   filter(!(genus_species == "Neosergestes_edwardsii" & Eye_Diameter == 0.85 & Body_Length == 0.72))
   
 #Remove Neosergestes edwardsii from dataset for SMA
-specimens_sma <- specimens %>%
-  filter(genus_species != "Neosergestes_edwardsii")
+specimens_sma <- specimens_ed %>%
+  filter(genus_species != "Neosergestes_edwardsii") %>%
+  mutate(species_text = as.factor(paste(Genus, Species, sep = " "))) # Add labels for species
   
 # Model for developmental scaling across specimens grouped by species
 sma_species <- sma(formula = Eye_Diameter ~ Body_Length * genus_species, 
@@ -1036,7 +1037,7 @@ Below, we plot species-specific slopes for developmental eye-body allometry onto
 cc_species$genus_species <- rownames(cc_species)
 
 #merge coefficients with species data by rowname
-species_sma <- left_join(species, cc_species, by = "genus_species") %>%
+species_sma <- left_join(traits, cc_species, by = "genus_species") %>%
   filter(genus_species != "Neosergestes_edwardsii")
 
 # Prep data and phylogeny -----
@@ -1103,15 +1104,19 @@ plot(pgls.profile(mod, "lambda"))
 
 ```
 
-A test for phylogenetic signal implemented in _caper_ indicates that the estimate for Pagel's lambda is 0.78. However, this estimate was not significant, and neither the upper or lower bound of the confidence interval could be estimated. This could indicate that there is no phylogenetic signal in these data, but could also be the result of our very small sample size of species for comparative evolutionary models (n = 14). Simulations have previously found that estimating Pagel's lambda for datasets of >20 species is problematic and often unreliable (see Freckleton et al., 2002). 
+A test for phylogenetic signal implemented in _caper_ indicates that the estimate for Pagel's lambda is 0.78. However, this estimate was not significant, and neither the upper or lower bound of the confidence interval could be estimated. This could indicate that there is no phylogenetic signal in these data, but could also be the result of our very small sample size of species for comparative evolutionary models (n = 14). Simulations have previously found that estimating Pagel's lambda for datasets of >20 species is problematic and often unreliable (see Freckleton et al., 2002). The likelihood profile of lamda shows that there is increased likelihood that it's somewhere between 0.5 and 1. 
 
 # Evolutionary eye-body allometry in Sergestidae
 
-We next examine interspecific (evolutionary) eye-body allometry across sergestids using species means for eye diameter and body length. Here, we use phylogenetic least-squares regression (using the _caper_ package) to fit the allometric relationship between species means for eye size and body length across 15 species of sergestids.
+We next examine interspecific (evolutionary) eye-body allometry across sergestids using species means for eye diameter and body length. In calculating species means, we want to use adults only and also make sure that the data we use downstream for traits is relevent to the size class of individuals that we are taking species means from. The biggest concern for the Sergestidae is ontogenetic descent, as this is common across midwater animals and could convolute relationships between eye size and depth. However, body size for 'adult' depth distribution data we used in this paper was cutoff between 4-11mm depending on species, and our smallest specimen here is 12.97mm, so we are confident that species averages based on full species samples in our dataset are appropriate here. 
 
-Note: the removal of 3 outlier specimens has likely slightly changed 3 species means from what they are compiled in the spreadsheet you sent. I have recalculated all species means here from the specimen data with outliers removed and used those values for analyses
+Below, we use phylogenetic least-squares regression (using the _caper_ package) to fit the allometric relationship between species means for eye size and body length across 15 species of sergestids.
+
+Note: the removal of 3 outlier specimens has slightly changed 3 species means from what they are compiled in the original spreadsheet. I have recalculated all species means here from the specimen data with outliers removed and used those values for analyses. I merged these data with the trait data from the original species datasheet for analyses. 
 
 ```{r evo-pgls, results = "hide"}
+
+# Prep data ------
 
 #Calculate species means (3 outliers removed)
 sp_means <- specimens_ed %>% 
@@ -1119,20 +1124,18 @@ sp_means <- specimens_ed %>%
   group_by(genus_species) %>%
   summarise(eye_av = mean(Eye_Diameter), 
             length_av = mean(Body_Length), 
-            n = n())
+            n = n()) %>%
+  ungroup()
 
-# Prep data ------
+#Merge with species trait data stored in dataframe 'species'
+species <- traits %>%
+  left_join(sp_means, by = "genus_species")
 
 #check that names match in dataframe and tree
-name.check(phy = tree, data = sp_means, data.names = species$Binomial)
+name.check(phy = tree, data = species, data.names = species$Binomial)
   
-#set node names to null (or throws duplicate error)
-tree$node.label <- NULL
-
 #use caper function to combine phylogeny and data into one object (this function also matches species names in tree and dataset)
-species.comp <- comparative.data(phy = tree, data = species, 
-                            names.col = Binomial, vcv = TRUE, 
-                            na.omit = FALSE, warn.dropped = TRUE)
+species.comp <- comparative.data(data = species, phy = tree, names.col = "Binomial", vcv = TRUE, na.omit = FALSE, warn.dropped = TRUE)
 
 #check for dropped tips or dropped species
 species.comp$dropped$tips #phylogeny
@@ -1140,8 +1143,8 @@ species.comp$dropped$unmatched.rows #dataset
 
 # PGLS model -------
 
-#fit model
-pgls_evo <- pgls(log10(Eye_diameter) ~ log10(Body_length), 
+#fit model for eye diameter ~ body length
+pgls_evo <- pgls(log10(eye_av) ~ log10(length_av), 
                data = species.comp, 
                lambda = "ML", #uses Maximum Liklihood estimate of lambda
                param.CI = 0.95)
@@ -1153,23 +1156,34 @@ plot(pgls_evo)
 par(mfrow = c(1, 1))
 ```
 
-The PGLS regression shows that eyes scale with body length with a slope of 0.85, indicating that eyes have a negative/hypo allometry with body size. This is what is most common among all vertebrates and some invertebrates that have been examined so far (inverts tend to vary a lot more than verts). 
-
-The maximum likelihood estimate of lambda here is 1.00 (high phylogenetic signal), so that's what caper has used to create the variance-covariance matrix for the regression. However, small sample sizes (< 20-30 data points) have no power to estimate lambda (see Freckleton et al. 2002), so tests for phylogenetic signal in this dataset are essentially meaningless (note that the 95% confidence interval for lambda here is 0 to 1, all possible values, and the p-values are non-signficant). For this reason, if any of our other comparative analyses estimate a lambda of 0, we should repeat them again forcing lambda to 1, just so we can see what difference that makes in the model fits (as we can't know what lambda actually is in this small dataset). Alternatively, we could run all fits with lambda set to 0 (which ignores phylogeney) and again to 1 (highest phylogenetic signal) so that we can bin the possible results into the extremes. 
+The standard model checks for the PGLS of interspecific eye diameter vs. body length are a bit wonky. The residuals look bimodal (though don't have huge weird outliers) and the q-q plot is a bit funky. We'll have to dedide if we're ok with this. Assuming we accept thsi, model results are below. 
 
 ```{r}
 #print model output 
 summary(pgls_evo)
+
+#save coefficients of fits as object
+cc_pgls_evo <- data.frame(coef(pgls_evo))
+```
+
+The PGLS regression shows that eyes scale with body length with a slope of 0.85, indicating that eyes have a negative allometry (hypoallometric, slope < 1) with body size. This is what is most common among all vertebrates and some invertebrates that have been examined so far (inverts tend to vary a lot more than verts). 
+
+```{r}
 
 #Likelihood plot for Pagel's lambda 
 lambda.evo <- pgls.profile(pgls_evo, "lambda")
 plot(lambda.evo, main = "Pagel's lambda", 
      sub = "Solid red line indicates estimate for lambda and broken red lines indcaite the 95% confidence interval")
 
-#save coefficients of fits as object
-cc_pgls_evo <- data.frame(coef(pgls_evo))
+```
 
-# Make plot ------
+The maximum likelihood estimate of lambda is 1.00 (high phylogenetic signal/Brownian Motion), so that's what _caper_ has used to create the variance-covariance matrix for the regression. However, small sample sizes (< 20-30 data points) have no/little power to estimate lambda (see Freckleton et al. 2002), so tests for phylogenetic signal in this dataset are essentially meaningless (note that the 95% confidence interval for lambda here is 0 to 1, all possible values, and the p-values are non-signficant). For this reason, if any of our other comparative analyses estimate a lambda of 0, we should repeat them again forcing lambda to 1, just so we can see what difference that makes in the model fits (as we can't know what lambda actually is in this small dataset). 
+
+Alternatively, we could run all models with lambda set to 0 (which ignores phylogeney) and again to 1 (highest phylogenetic signal) so that we can bin the possible results into the possible extremes and understand the potential effect of phylogeny. This is probably the most reasonable approach for all of our comparative models given the sample size. 
+
+```{r}
+
+# Make plot 
 plot_evo <- ggplot(species, aes(x = Body_length, y = Eye_diameter, text = genus_species)) + 
   geom_point(size = 2, alpha = 0.6) + 
   scale_x_log10(name = "Body length (mm)") + #makes x axis log scale and named
@@ -1180,25 +1194,22 @@ plot_evo <- ggplot(species, aes(x = Body_length, y = Eye_diameter, text = genus_
   geom_text(x = -Inf, y = Inf, hjust = -0.05, vjust = 1.5, nudge_x = 4, label = paste("slope =", round(cc_pgls_evo[2,1], digits = 2), sep = " "), size = 3) +
   geom_text(x = -Inf, y = Inf, hjust = -0.05, vjust = 3, label = paste("intercept =", round(cc_pgls_evo[1,1], digits = 2), sep = " "), size = 3)
 
-#interactive plot
+# Interactive plot
 ggplotly(plot_evo)
-
-# Export figure -----
 
 ```
 
-
 # Correlates of eye size in deep-sea sergestid shrimp
 
-Next, we examine whether varition in relative eye size is correlated with ecological variables related to light regime and vision: depth range and bioluminescent organs. 
+Next, we examine whether varition in eye size is correlated with ecological variables related to light regime and vision: depth and bioluminescent organs. 
 
-## Ecology and absolute and relative eye size across species
+## Phylogenetic distribution of eye size and ecology
 
-Here, we examine how absolute and relative eye size vary across the sergestid phylogeny, and whether these correlate to ecological variables. For visualizing relative eye size, we use the residuals of the PGLS fit for eye-body allometry, as these show eye size corrected by both body size and evolutionary relationships.  
+Here, we examine how absolute and relative eye size vary across the sergestid phylogeny, and the corresponding distribution ecological variables. For visualizing relative eye size, we use the residuals of the PGLS fit for eye-body allometry, as these show eye size corrected by both body size and evolutionary relationships.  
 
-*There are few enough species that it would be really nice to put an image of each species next to the phylogeny/associated data if you have them. If not photos, we could make vector images of species sillhouettes and scale them by body size for easy reference*. 
+Note: There are few enough species that it would be really nice to put an image of each species next to the phylogeny/associated data if you have them. If not photos, we could make vector images of species sillhouettes and scale them by body size. That would look nice and provide some additional useful information on the figure.
 
-```{r eyesize-eco, results = "hide", fig.width=8, fig.height=5.5, fig.cap = "Phylogeny of the 15 sertestids sampled depicting absolute eye diameter (purple circles scaled by absolute size), relative eye investment (bars scaled by the residuals from the PGLS of eye diameter vs. body length), and photophore complexity (colored boxes)."}
+```{r eyesize-phylo, results = "hide", fig.width=6, fig.height=4, fig.cap = "Phylogeny of the 15 sertestids sampled depicting absolute eye diameter (purple circles scaled by absolute size), relative eye investment (bars scaled by the residuals from the PGLS of eye diameter vs. body length), and photophore complexity (colored boxes)."}
 
 #Add residuals from PGLS fits to dataframe ----
 
@@ -1208,19 +1219,24 @@ pglsres <- residuals(pgls_evo)
 #name residuals
 colnames(pglsres) <- "pglsres" 
 
+#add rownames to species dataframe
+rownames(species) <- species$Binomial
+
 #merge residuals with species data by rowname
 species.phy <- merge(species, pglsres, by = "row.names") 
 
 #make column converted to observed eye size as factor of PGLS fit
 species.phy$eyefactor <- 10^species.phy$pglsres
 
-# Prep data and phylogeny -----
+# Prep phylogeny -----
 
 # Make Genus_species tip labels to replace Binomial codes
 sp.tips <- data.frame(old = species.phy$Binomial, new = species.phy$genus_species)
 
 # replace tip labels in phylogeny
 tree.plot <- sub.taxa.label(tree, sp.tips)
+
+# Prep data ----
 
 #change row names of species data
 rownames(species.phy) <- species.phy$genus_species
@@ -1232,15 +1248,12 @@ name.check(tree.plot, species.phy)
 species.phy <- species.phy[tree.plot$tip.label, ] 
 
 #make trait vector for absolute eye size
-aveye <- as.vector(species.phy$Eye_diameter) 
-
-#add tip label names to vector
+aveye <- as.vector(species.phy$eye_av) 
 names(aveye) <- species.phy$genus_species
 
 #make trait vector for eye investment (PGLS residuals)
 releye <- as.vector(species.phy$pglsres) #residuals of pgls
 names(releye) <- species.phy$genus_species
-
 
 # Phylogeny with eye size and investment -------
 
@@ -1252,53 +1265,116 @@ col_ph <- c("lensed" = "palegreen",
 
 #plot tree with eye investment bars
 plotTree.wBars(tree.plot, releye, 
-               scale = 4, 
+               scale = 1.5, 
                tip.labels = TRUE,
-               offset = 0.8,
+               col = unname(col_ph[as.factor(species.phy$Organ)]),
+               offset = 1,
                ftype = "bi",
-               fsize = 1.2)
+               fsize = 0.7)
 
 #add tip labels for absolute eye size
 tiplabels(cex = 1.5*aveye,
           pch = 19, #shape of labels
           col = "mediumpurple",
-          offset = 0) 
+          offset = 0)
 
-#add tip labels for eye size
-tiplabels(text = species.phy$Organ,
-          cex = 0.7,
-          #frame = "none",
-          bg = col_ph[species.phy$Organ],
-          adj = 0,
-          offset = 2) 
+#add legend for photophores
+legend(x = "bottomleft", legend = c("lensed", "none", "pesta", "unlensed"), pch = 22, pt.cex= 2, pt.bg = col_ph, cex = 1, bty = "n", horiz = F)
+
 
 #Export figure------
-png("../Figures/phylo.png", width = 8, height = 5.5, units = "in", res = 500)
+pdf("../Figures/phylo.pdf", width = 6, height = 4)
 
 #plot tree with eye investment bars
 plotTree.wBars(tree.plot, releye, 
-               scale = 4, 
+               scale = 1.5, 
                tip.labels = TRUE,
-               offset = 0.8,
+               col = unname(col_ph[species.phy$Organ]),
+               offset = 1,
                ftype = "bi",
-               fsize = 1.2)
+               fsize = 0.7)
 
 #add tip labels for absolute eye size
 tiplabels(cex = 1.5*aveye,
           pch = 19, #shape of labels
           col = "mediumpurple",
-          offset = 0) 
+          offset = 0)
 
-#add tip labels for eye size
-tiplabels(text = species.phy$Organ,
-          cex = 0.7,
-          #frame = "none",
-          bg = col_ph[species.phy$Organ],
-          adj = 0,
-          offset = 2) 
+#add legend for photophores
+legend(x = "bottomleft", legend = c("lensed", "none", "pesta", "unlensed"), pch = 22, pt.cex= 2, pt.bg = col_ph, cex = 1, bty = "n", horiz = F)
+
 
 dev.off()
 ```
+
+The above plot shows the sergested phylogeny with absolute eye size (purple points scaled by eye diameter), relative eye size (scaled bars, residuals of eye vs. body pgls), and photopore type (bar colors). Note: we can (and should) change the colors on this or make BW. We can refine and probably merge with depth distribution phylogeny for a paper figure.
+
+
+```{r, fig.width=8, fig.height=5.5}
+
+# tree showing day and night mean depths across species
+
+#fix node order upset by ladderization
+
+#filter out internal nodes from second column of edge matrix
+is_tip <- tree.plot$edge[,2] <= length(tree.plot$tip.label)
+ordered_tips <- tree.plot$edge[is_tip, 2]
+
+#extract tips in right order
+tree.plot$tip.label[ordered_tips]
+
+#resort trait dataset to the order of tree tip labels
+species.phy <- species.phy[tree.plot$tip.label[ordered_tips], ] 
+
+#make trait vector for day depth
+day <- as.vector(species.phy$Day_Avg) 
+names(day) <- species.phy$genus_species
+
+#make trait vector for night depth
+night <- as.vector(species.phy$Night_Avg) 
+names(night) <- species.phy$genus_species
+
+#Plot tree with depth ranges
+plot(tree.plot, 
+     show.tip.label= TRUE, 
+     font=3, 
+     cex=3, 
+     label.offset = 0.62, 
+     edge.width=4)
+
+#add gray bar for difference in day/night depths (migration distance)
+segments(1.05 + (day*0.0003), 1:length(day), 1.05 + (night*0.0003), 1:length(night), col="gray", lwd=20)
+
+#add yellow point for day depth
+segments(1.05 + (day*0.0003), 1:length(day), 1.05 + (day*0.0003), 1:length(day), col="orange", lwd=25)
+
+#add blue point for night depth
+segments(1.05 + (night*0.0003), 1:length(night), 1.05 + (night*0.0003), 1:length(night), col="royalblue2", lwd=25)
+
+# export figure 
+pdf("../Figures/phylodepth.pdf", width = 8, height = 5.5)
+
+#Plot tree with depth ranges
+plot(tree.plot, 
+     show.tip.label= TRUE, 
+     font=3, 
+     cex=0.9, 
+     label.offset = 0.62, 
+     edge.width=2)
+
+#add gray bar for difference in day/night depths (migration distance)
+segments(1.05 + (day*0.0003), 1:length(day), 1.05 + (night*0.0003), 1:length(night), col="gray", lwd=8)
+
+#add yellow point for day depth
+segments(1.05 + (day*0.0003), 1:length(day), 1.05 + (day*0.0003), 1:length(day), col="orange", lwd=10)
+
+#add blue point for night depth
+segments(1.05 + (night*0.0003), 1:length(night), 1.05 + (night*0.0003), 1:length(night), col="royalblue2", lwd=10)
+dev.off()
+
+```
+
+The above plot shows the average daytime (orange) and nighttime (blue) depths for each species in the phylogeny. Gray bars indicate vertical distance traveled during diel vertical migrations. (Note that this plot is missing a scale bar, easier to add in illustrator, but min depth on left/blue is 133m and max depth on right/orange is 1750m).
 
 ## Visualizing eye size and ecology 
 
