@@ -1370,24 +1370,27 @@ segments(1.05 + (day*0.0003), 1:length(day), 1.05 + (day*0.0003), 1:length(day),
 
 #add blue point for night depth
 segments(1.05 + (night*0.0003), 1:length(night), 1.05 + (night*0.0003), 1:length(night), col="royalblue2", lwd=10)
+
 dev.off()
 
 ```
 
-The above plot shows the average daytime (orange) and nighttime (blue) depths for each species in the phylogeny. Gray bars indicate vertical distance traveled during diel vertical migrations. (Note that this plot is missing a scale bar, easier to add in illustrator, but min depth on left/blue is 133m and max depth on right/orange is 1750m).
+The above plot shows the average daytime (orange) and nighttime (blue) depths for each species in the phylogeny. Gray bars indicate vertical distance traveled during diel vertical migrations. (Note that this plot is missing a scale bar, easier to add in Illustrator, but min depth on left/blue is 133m and max depth on right/orange is 1750m).
 
-## Visualizing eye size and ecology 
+## Photophore complexity
 
-The following are exploratory plots that do not account for the phylogenetic distribution of traits. Plots are interactive: hover over a data point to see the species and x/y values.  
+**Does eye size correlate with photophore complexity?**
 
-### Photophore complexity 
+**Prediction:** Eye size may be largest in animals with unlensed photophores, followed by lensed and organ of pesta types, as organs that are visually more difficult to resolve will require greater sensitivity to light (note: should this say longer focal lengths or somethign like that for higer acuity, not sensitivity?). 
 
-**Prediction:** We might predict that species that have highly developed photophrores may be more likely to engage in visual signaling, and thus may have higher investments in eye size. However, this is the opposite of what we see here (species with organs of pesta have the smallest eyes and the lowest relative investment in eye size). As BL can also be used for camouflage, and BL from other species is ubiquitous, there is a reasonable expectation that they could be uncorrelated as well.
+### Preliminary plots (photophores)
+
+Before incorporating phylogeny, we can inspect the distribution of our data with boxplots for absolute and relative eye size by photophore type. 
 
 ```{r photo-viz}
 
 #Boxplots for absolute eye size across photophores -----
-plot_abs_photo <- ggplot(data = species.phy, aes(x = reorder(Organ, Eye_diameter, FUN = mean), y = Eye_diameter)) + 
+plot_abs_photo <- ggplot(data = species.phy, aes(x = reorder(Organ, eye_av, FUN = mean), y = eye_av)) + 
   geom_boxplot(notch = FALSE, outlier.shape = NA, alpha = 0.6) + #controls boxes
   stat_summary(fun.y = mean, colour = "black", geom = "point", shape = 18, size = 3, show_guide = FALSE) + #controls what stats shown
  geom_jitter(shape = 19, size = 1.3, alpha = 0.5, position = position_jitter(0.15)) +
@@ -1405,7 +1408,7 @@ plot_rel_photo <- ggplot(data = species.phy, aes(x = reorder(Organ, pglsres, FUN
  geom_jitter(shape = 19, size = 1.3, alpha = 0.5, position = position_jitter(0.15)) +
   theme(text = element_text(size=14), panel.background = element_blank(), axis.line = element_line(colour = "black")) + #controls background
   xlab("Photophore complexity") +
-  ylab("Relative eye investment") +
+  ylab("Eye ~ body residuals") +
   ggtitle("Relative eye investment")
 
 ggplotly(plot_rel_photo) 
@@ -1413,114 +1416,16 @@ ggplotly(plot_rel_photo)
 
 ```
 
-### Maximum depth
+It looks like species with organs of pesta tend to have smaller eye diameters and smaller relative eye sizes than species with other types of photophores (note: we may want to combine the non-pesta organs together for power as sample size within groups is really small). We next test this in an evolutionary framework.
 
-**Prediction:** We might expect that eye size would increase with maximum depth to some point, then may level off and become uncorrelated once the pelagic zone occupied lacks downwelling light for vision. Maximum recorded depth isn't the best indicator of where an animal actually spends its time, so we could expect that the actual depth occupied at the brightest time of day could be somewhere a bit shallower than these values, so tough to say whether and where leveling off might occur. 
+### PGLS (photophores)
 
-Visual inspection of the data shows that absolute eye size does seem to increase with maximum depth. However, body size also increases with maximum depth, and both relative eye size (eye/body) and eye investment (residuals of PGLS for eye ~ body) show litte to no correlation with maximum depth. 
-
-```{r depth-viz}
-
-# Absolute eye size by max depth ------
-plot_abs_max <- ggplot(species.phy, aes(x = Eye_diameter, y = Max, text = genus_species)) + 
-  geom_point(size = 2, alpha = 0.6) + 
-  scale_y_reverse(name = "Maximum depth (m)") + #makes x axis log scale and named
-  scale_x_log10(name = "Eye diameter (mm)") + #makes y axis log scale and named
-  theme_bw() +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
-
-ggplotly(plot_abs_max)
-
-# Body size with max depth -----
-plot_body_max <- ggplot(species.phy, aes(x = Body_length, y = Max, text = genus_species)) + 
-  geom_point(size = 2, alpha = 0.6) + 
-  scale_y_reverse(name = "Maximum depth (m)") + #makes x axis log scale and named
-  scale_x_log10(name = "Body length (mm)") + #makes y axis log scale and named
-  theme_bw() +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
-
-ggplotly(plot_body_max)
-
-# Eye size/body size with max depth -----
-plot_eb_max <- ggplot(species.phy, aes(x = Relative_size, y = Max, text = genus_species)) + 
-  geom_point(size = 2, alpha = 0.6) + 
-  scale_y_reverse(name = "Maximum depth (m)") + #makes x axis log scale and named
-  scale_x_log10(name = "Eye:body") + #makes y axis log scale and named
-  theme_bw() +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
-
-ggplotly(plot_eb_max)
-
-# Relative eye investment by max depth -----
-plot_inv_max <- ggplot(species.phy, aes(x = eyefactor, y = Max, text = genus_species)) + 
-  geom_point(size = 2, alpha = 0.6) + 
-  scale_y_reverse(name = "Maximum depth (m)") + #makes x axis log scale and named
-  scale_x_log10(name = "Relative eye investment") + #makes y axis log scale and named
-  theme_bw() +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
-
-ggplotly(plot_inv_max)
-
-# Absolute eye size by depth range -----
-plot_abs_range <- ggplot(species.phy, aes(x = Eye_diameter, y = (Max - Min), text = genus_species)) + 
-  geom_point(size = 2, alpha = 0.6) + 
-  scale_y_reverse(name = "Depth range (m)") + #makes x axis log scale and named
-  scale_x_log10(name = "Eye diameter (mm)") + #makes y axis log scale and named
-  theme_bw() +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
-
-ggplotly(plot_abs_range)
-
-# Relative eye investment by depth range -----
-plot_inv_range <- ggplot(species.phy, aes(x = eyefactor, y = (Max - Min), text = genus_species)) + 
-  geom_point(size = 2, alpha = 0.6) + 
-  scale_y_reverse(name = "Depth range (m)") + #makes x axis log scale and named
-  scale_x_log10(name = "Relative eye investment") + #makes y axis log scale and named
-  theme_bw() +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
-
-ggplotly(plot_inv_range)
-
-
-# Absolute eye size by mid depth -----
-
-#add column for midpoint of depth range
-species.phy <- species.phy %>%
-  mutate(depth_mid = ((Max - Min)/2) + Min)
-
-#plot
-plot_abs_mid <- ggplot(species.phy, aes(x = Eye_diameter, y = depth_mid, text = genus_species)) + 
-  geom_point(size = 2, alpha = 0.6) + 
-  scale_y_reverse(name = "Midpoint depth (m)") + #makes x axis log scale and named
-  scale_x_log10(name = "Eye diameter (mm)") + #makes y axis log scale and named
-  theme_bw() +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
-
-ggplotly(plot_abs_mid)
-
-# Relative eye investment by mid depth -----
-plot_inv_mid <- ggplot(species.phy, aes(x = eyefactor, y = depth_mid, text = genus_species)) + 
-  geom_point(size = 2, alpha = 0.6) + 
-  scale_y_reverse(name = "Midpoint depth (m)") + #makes x axis log scale and named
-  scale_x_log10(name = "Relative eye investment") + #makes y axis log scale and named
-  theme_bw() +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
-
-ggplotly(plot_inv_mid)
-
-```
-
-
-## Comparative models
-
-### Eye diameter ~ body length * photophore complexity
-
-Below, I run a PGLS model of log10(eye diameter) vs. log10(body length) with photophore complexity as a covariate (= phylogenetic ANCOVA). Because we have so many states for photophore complexity and a small sample of species, we cannot look at the interaction term for body size x photophore complexity because then our states outnumber our number of observations.
+Below, I run a PGLS model of log10(eye diameter) vs. log10(body length) with photophore complexity as a covariate. Because we have so many states for photophore complexity and a small sample of species, we cannot look at the interaction term for body size x photophore complexity because then our states outnumber our number of observations.
 
 ```{r pgls-photo}
 
 #run PGLS modelusing the Maximum Liklihood estimate of lambda
-pgls_photo <- pgls(log10(Eye_diameter) ~ log10(Body_length) + Organ, 
+pgls_photo <- pgls(log10(eye_av) ~ log10(length_av) + Organ, 
                data = species.comp, 
                lambda = "ML",
                #uses Maximum Liklihood estimate of lambda
@@ -1532,35 +1437,90 @@ plot(pgls_photo) #plot the linear model
 par(mfrow = c(1,1)) #set plotting window back to one plot
 ```
 
-#### Model outputs
+The model checks look pretty good here. 
 
-This output from anova(model) gives the overall significance of the main, 2-way, 3-way, etc. interactions and sequential sums of squares. Here we can see that body length has a significant effect on eye size (expected, and we already knew that), but we also find that photophore complexity has a significant effect on eye size when the effect of body size is accounted for (p = 0.01).
+Next we can take a look at the overall significance of the main, 2-way, 3-way, etc. interactions and sequential sums of squares. Here we can see that body length has a significant effect on eye size (expected, we already knew that), but we also find that photophore complexity/type has a significant effect on eye size when the effect of body size is accounted for (p = 0.007).
 
 ```{r}
 #anova
 anova(pgls_photo)
 ```
 
-This output from summary(model) gives PGLS coefficients as well significance with respect to contrasts. Note that for a categorical variable, R will treat whichever factor comes first as the "control" and will test other factors for significant differences relative to that "control". Here, the comparison state ("control") for photophore complexity is set to "unlensed" (estimate listed under (Intercept) - that's why you don't see that state as a comparison line) and the other states show the *difference* in the estimated intercept for that state compared to the unlensed state, and whether that difference is significant. You can see that "none" and "lensed" show no significant difference in intercept from "unlensed", but that "pesta" does show a significant difference (p = 0.01) and has a lower intercept, indicating smaller relative eye size. 
-
-The output also includes the maximum-likelihood estimation of lambda, which represents the phylogenetic signal for PGLS model *residuals*. Here, the estimate for lambda is 0.00, which means that there is no phylogenetic signal. This doesn't mean we shouldn't include phylogeny in the model (no reason not to), but it does mean that it's the same result we would get if we assessed this without including phylogeny. This also doesn't mean that there is not phylogenetic signal in the individual traits that we put into the model; this is only lambda for the *model residuals*, not the traits themselves.
+Finally, we look at the PGLS coefficients as well significance with respect to contrasts. Note that for a categorical variable, R will treat whichever factor comes first as the "control" and will test other factors for significant differences relative to that "control". Here, the comparison state ("control") for photophore complexity is set to "unlensed" (estimate listed under (Intercept) - that's why you don't see that state as a comparison line) and the other states show the *difference* in the estimated intercept for that state compared to the unlensed state, and whether that difference is significant. You can see that "none" and "lensed" show no significant difference in intercept from "unlensed", but that "pesta" does show a significant difference (p = 0.005) and has a lower intercept, indicating smaller relative eye size. 
 
 ```{r}
 #summary
 summary(pgls_photo)
 ```
 
+The output also includes the maximum-likelihood estimation of lambda, which represents the phylogenetic signal for PGLS model *residuals*. Here, the estimate for lambda is 0.00, which means that there is no phylogenetic signal. This doesn't mean we shouldn't include phylogeny in the model (no reason not to), but it does mean that it's the same result we would get if we assessed this without including phylogeny. This also doesn't mean that there is not phylogenetic signal in the individual traits that we put into the model; this is only lambda for the *model residuals*, not the traits themselves. However, as mentioned above, when you have <20 species the power to estimate lambda is not there, so we may want to consider running these models twice, one forcing lambda to 1 and another forcing lambda to 0, so that we can see how that affects our findings. That could help us in our interpretation. 
 
-### Eye diameter ~ body length + maximum depth
+```{r}
+#Likelihood plot for Pagel's lambda 
+plot(pgls.profile(pgls_photo, "lambda"), 
+     main = "Pagel's lambda", 
+     sub = "Solid red line indicates estimate for lambda and broken red lines indcaite the 95% confidence interval")
 
-Below, I run a PGLS model of klg10(eye diameter) vs. log10(body length) with maximum depth as a covariate. This model does not test for the interaction between body length and maximum depth. 
+```
 
-**Question to consider:** Should we log maximum depth in these analyses? Allometric data are typically logged and I have done so throughout these analyses. Depth you could argue either way, but since light attenuates exponentially with depth and we are thinking about light environment here I'd be inclined to log? Currently, eye size and body size are logged and depth is unlogged in the below analysis. 
+## Depth distributions
+
+**Does eye size correlate with daytime or nighttime depth distributions? Are these relationships affected by vertical migration?**
+
+**Prediction:** Eye size increases with daytime depth, as these animals may require the greatest sensitivity to light to cope with the exponential attenuation of light with depth. 
+
+Note: Did we have predictions about how vertical migration (which we are factoring in as the interaction effect of day and night depths) might affect eye size? I might predict that stronger migrators might have larger eyes, as they may be able to use ambient light for vision more of the time (things that stay deep at night would not have ambient light available at night). Or they might be using their eyes to follow an isolume. Just a couple ideas!
+
+### Exploratory plots (depth)
+
+Before incorporating phylogeny, we can inspect the distribution of our data with scatter plots for absolute and relative eye size and body size vs. daytime and nighttime depth. In the below plots, daytime depths are orange and nighttime depths are blue. 
+
+```{r depth-viz}
+
+# Absolute eye size with depths ------
+plot_abs_depths <- ggplot(species.phy, aes(x = eye_av, y = Day_Avg, text = genus_species)) + 
+  geom_point(size = 2, alpha = 0.8, col = "orange") + 
+  scale_y_reverse(name = "Depth (m)") + #makes x axis log scale and named
+  scale_x_log10(name = "Eye diameter (mm)") + #makes y axis log scale and named
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  geom_point(aes(x = eye_av, y = Night_Avg), size = 2, alpha = 0.8, col = "royalblue2")
+
+ggplotly(plot_abs_depths)
+
+# Absolute eye size with depths ------
+plot_length_depths <- ggplot(species.phy, aes(x = length_av, y = Day_Avg, text = genus_species)) + 
+  geom_point(size = 2, alpha = 0.8, col = "orange") + 
+  scale_y_reverse(name = "Depth (m)") + #makes x axis log scale and named
+  scale_x_log10(name = "Body length (mm)") + #makes y axis log scale and named
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  geom_point(aes(x = length_av, y = Night_Avg), size = 2, alpha = 0.8, col = "royalblue2")
+
+ggplotly(plot_length_depths)
+
+# Eye size/body size with max depth -----
+plot_rel_depth <- ggplot(species.phy, aes(x = eye_av/length_av, y = Day_Avg, text = genus_species)) + 
+  geom_point(size = 2, alpha = 0.8, col = "orange") + 
+  scale_y_reverse(name = "Depth (m)") + #makes x axis log scale and named
+  scale_x_log10(name = "Eye/body ratio") + #makes y axis log scale and named
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  geom_point(aes(x = eye_av/length_av, y = Night_Avg), size = 2, alpha = 0.8, col = "royalblue2")
+
+ggplotly(plot_rel_depth)
+```
+
+Visual inspection of the data shows that absolute eye size, body size, and relative eye size seem to increase with daytime depth, but it's not a perfect trend. Nighttime depth doesn't vary much across species, but to me it looks like the species with larger eyes might also have the larger differences between nighttime and daytime depths. We next test this in an evolutionary framework.
+
+### PGLS (depth)
+
+Below, I run a PGLS model of log10(eye diameter) vs. log10(body length) with covariates of daytime depth, nighttime depth, and the interaction between daytime and nighttime depth.
 
 ```{r pgls-depth}
 
-#run PGLS modelusing the Maximum Liklihood estimate of lambda
-pgls_depth <- pgls(log10(Eye_diameter) ~ log10(Body_length) + Max, 
+#run PGLS model using the Maximum Liklihood estimate of lambda
+pgls_depth <- pgls(log10(eye_av) ~ log10(length_av)  + log10(Day_Avg) * log10(Night_Avg), 
                data = species.comp, 
                lambda = "ML", bounds = list(lambda = c(1e-05, 1)),
                #uses Maximum Liklihood estimate of lambda
@@ -1572,22 +1532,16 @@ plot(pgls_depth) #plot the linear model
 par(mfrow = c(1,1)) #set plotting window back to one plot
 ```
 
-#### Model outputs
+The model checks are ok, residual structure a bit weird but probably due to sample size. Nothing too terrible. 
 
-This output from anova(model) gives the overall significance of the main effects and sequential sums of squares. Here we can see that body length has a significant effect on eye size when depth is corrected for (expected, and we already knew that), but that maximum depth also has a significant effect on eye size corrected for the effects of body size (p < 0.05).
-
-Note: I originally ran this model with an additional interaction term for depth x body length, and there was not a significant effect for maximum depth (p = 0.05) or the interaction between max depth and body length (p = 0.67). Note though that depth was very close to being significant, so this may result from our low species sample size (n = 15) combined with additional model paramaterization yielding less statistical power; additional species sampling may yield a different result. 
-
-Second note: There is a postitive relationship between body size and maximum depth in these data (body length increases with maximum depth). This raises some concern about multicolinearity, as these models assume that our two predictive variables are independent of each other (and in this case, that is at least partially false). The finding that species mean body size increases with maximum depth could be a potentially interesting thing to have a look at as well, there are a number of studies looking at body size with depth in the deep ocean so it's definitely of interest, I think especially people thinking about carbon/food availability. 
+Next we can take a look at the overall significance of the main effects/interactions and sequential sums of squares. Here we can see that body length has a significant effect on eye size when depth is corrected for (expected, and we already knew that), but daytime depth, nighttime depth, and the interaction between daytime and nighttime depth do not have significant effects on eye size. 
 
 ```{r}
 #anova
 anova(pgls_depth)
 ```
 
-This output from summary(model) gives PGLS coefficients as well significance with respect to contrasts. 
-
-The output also gives a maximum-likelihood estimation of lambda = 0.00, indicating that there is no phylogenetic signal in the residuals of the model (and that caper used a lambda of 0 to set the variance-covariance matrix in the regression). However, small sample sizes have no power to estimate the true value of lambda, so this is not very meaningful in this dataset. We should decide on a strategy for analysis (as mentioned above, may want to run all models again with lambda fixed at 1 as a comparison for the supp info).
+Finally, we look at the PGLS coefficients as well significance with respect to contrasts. 
 
 ```{r}
 #summary
@@ -1595,50 +1549,12 @@ summary(pgls_depth)
 #Here, the fit for predicting log10(eye size) is -1.18 + log10(0.64 * Body length) + log10(0.0001 * Max depth)
 ```
 
-### Eye diameter ~ body length * depth range
-
-Below, I run a PGLS model of log10(eye diameter) vs. log10(body length) with depth range as a covariate. This model does not test for the interaction between body length and depth range. 
-
-```{r pgls-range}
-
-#run PGLS modelusing the Maximum Liklihood estimate of lambda
-pgls_range <- pgls(log10(Eye_diameter) ~ log10(Body_length) + (Max - Min), 
-               data = species.comp, 
-               lambda = "ML", bounds = list(lambda = c(1e-05, 1)),
-               #uses Maximum Liklihood estimate of lambda
-               param.CI = 0.95)
-
-#evaluate model assumptions
-par(mfrow = c(2,2)) #makes your plot window into 2x2 panels
-plot(pgls_range) #plot the linear model
-par(mfrow = c(1,1)) #set plotting window back to one plot
-```
-
-#### Model outputs
-
-This output from anova(model) gives the overall significance of the main effects and sequential sums of squares. Both body length (as expected) and depth range (p < 0.05) show significant effects on eye size. 
+The output also gives a maximum-likelihood estimation of lambda = 1.00, indicating that there is no phylogenetic signal in the residuals of the model (and that _caper_ used a lambda of 1 to set the variance-covariance matrix in the regression). However, small sample sizes have no power to estimate the true value of lambda, so this is not very meaningful in this dataset. We should decide on a strategy for analysis (as mentioned above, may want to run all models again with lambda fixed at 0 as a comparison for the supp info so we can discuss how that affects our results).
 
 ```{r}
-#anova
-anova(pgls_range)
+#Likelihood plot for Pagel's lambda 
+plot(pgls.profile(pgls_photo, "lambda"), 
+     main = "Pagel's lambda", 
+     sub = "Solid red line indicates estimate for lambda and broken red lines indcaite the 95% confidence interval")
+
 ```
-
-This output from summary(model) gives PGLS coefficients as well significance with respect to contrasts. 
-
-The output also gives a maximum-likelihood estimation of lambda = 0.00, indicating that there is no phylogenetic signal in the residuals of the model (and that caper used a lambda of 0 to set the variance-covariance matrix in the regression). However, small sample sizes have no power to estimate the true value of lambda, so this is not very meaningful in this dataset. We should decide on a strategy for analysis (as mentioned above, may want to run all models again with lambda fixed at 1 as a comparison for the supp info).
-
-You can see below that the coefficients are really similar to those for max depth. I think that's because in many cases depth range = max depth (min depth only varies between 0 and 300 m). They are both probably showing pretty much the same thing here. 
-
-```{r}
-#summary
-summary(pgls_range)
-#Here, the fit for predicting log10(eye size) is -1.18 + log10(0.64 * Body length) + log10(0.0001 * Max depth)
-```
-
-### Thoughts on analyses so far
-
-It looks like we are detecting effects of both depth and photophore complexity on relative eye size, which is super cool!! In terms of other models to build, since we have a low number of species for comparative methods (n = 15), I'm inclined to avoid building larger additive models for these effects, as that will greatly increase the ratio of parameter number to sample size. That's just my thought though, we could certainly try it if you want to, as well as look at alternate additive approaches like ranking models by AIC. With PGLS, you have to fix lambda across the models instead of estimating via max likelihood or else the models aren't comparable via AIC, but since the estimate of lambda is unreliable anyway here we could try repeating analyses with lambda fixed at 0 and 1 to bin the range of possible results depending how much phylogenetic signal is truly present. 
-
-I think the best approach is to use these models to do specific hypothesis testing. We can certainly plug lots of variables into the models in various combinations and do model comparisons to find the 'best fits', but the more things we test, the more likely we are to find things that come up significant, and the more parameters we add, the more likely higher-parameter models will fit better. So, in general I'd advocate for only testing variables that you have a hypothesis for in terms of why that might affect relative eye size, or things that you see interesting patterns in when looking at the data.
-
-I'm super excited about your data and initial results and am always happy to add plots/analyses here in R as you think of more cool things to look at!!
