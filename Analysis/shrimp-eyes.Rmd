@@ -1209,7 +1209,7 @@ Here, we examine how absolute and relative eye size vary across the sergestid ph
 
 Note: There are few enough species that it would be really nice to put an image of each species next to the phylogeny/associated data if you have them. If not photos, we could make vector images of species sillhouettes and scale them by body size. That would look nice and provide some additional useful information on the figure.
 
-```{r eyesize-phylo, results = "hide", fig.width=6, fig.height=4, fig.cap = "Phylogeny of the 15 sertestids sampled depicting absolute eye diameter (purple circles scaled by absolute size), relative eye investment (bars scaled by the residuals from the PGLS of eye diameter vs. body length), and photophore complexity (colored boxes)."}
+```{r eyesize-phylo, results = "hide", fig.width=6, fig.height=4, fig.cap = "Phylogeny of the 15 sertestids sampled depicting absolute eye diameter (purple circles scaled by eye diameter), relative eye investment (bars scaled by the residuals from the PGLS of eye diameter vs. body length), and photophore complexity (color of bars)."}
 
 #Add residuals from PGLS fits to dataframe ----
 
@@ -1307,7 +1307,7 @@ legend(x = "bottomleft", legend = c("lensed", "none", "pesta", "unlensed"), pch 
 dev.off()
 ```
 
-The above plot shows the sergested phylogeny with absolute eye size (purple points scaled by eye diameter), relative eye size (scaled bars, residuals of eye vs. body pgls), and photopore type (bar colors). Note: we can (and should) change the colors on this or make BW. We can refine and probably merge with depth distribution phylogeny for a paper figure.
+Note: we can (and should) change the colors on this or make BW. We can refine and probably merge with depth distribution phylogeny for a paper figure.
 
 
 ```{r, fig.width=8, fig.height=5.5}
@@ -1321,7 +1321,7 @@ is_tip <- tree.plot$edge[,2] <= length(tree.plot$tip.label)
 ordered_tips <- tree.plot$edge[is_tip, 2]
 
 #extract tips in right order
-tree.plot$tip.label[ordered_tips]
+#tree.plot$tip.label[ordered_tips]
 
 #resort trait dataset to the order of tree tip labels
 species.phy <- species.phy[tree.plot$tip.label[ordered_tips], ] 
@@ -1338,18 +1338,18 @@ names(night) <- species.phy$genus_species
 plot(tree.plot, 
      show.tip.label= TRUE, 
      font=3, 
-     cex=3, 
+     cex=0.9, 
      label.offset = 0.62, 
-     edge.width=4)
+     edge.width=2)
 
 #add gray bar for difference in day/night depths (migration distance)
-segments(1.05 + (day*0.0003), 1:length(day), 1.05 + (night*0.0003), 1:length(night), col="gray", lwd=20)
+segments(1.05 + (day*0.0003), 1:length(day), 1.05 + (night*0.0003), 1:length(night), col="gray", lwd=8)
 
 #add yellow point for day depth
-segments(1.05 + (day*0.0003), 1:length(day), 1.05 + (day*0.0003), 1:length(day), col="orange", lwd=25)
+segments(1.05 + (day*0.0003), 1:length(day), 1.05 + (day*0.0003), 1:length(day), col="orange", lwd=10)
 
 #add blue point for night depth
-segments(1.05 + (night*0.0003), 1:length(night), 1.05 + (night*0.0003), 1:length(night), col="royalblue2", lwd=25)
+segments(1.05 + (night*0.0003), 1:length(night), 1.05 + (night*0.0003), 1:length(night), col="royalblue2", lwd=10)
 
 # export figure 
 pdf("../Figures/phylodepth.pdf", width = 8, height = 5.5)
@@ -1549,7 +1549,7 @@ summary(pgls_depth)
 #Here, the fit for predicting log10(eye size) is -1.18 + log10(0.64 * Body length) + log10(0.0001 * Max depth)
 ```
 
-The output also gives a maximum-likelihood estimation of lambda = 1.00, indicating that there is no phylogenetic signal in the residuals of the model (and that _caper_ used a lambda of 1 to set the variance-covariance matrix in the regression). However, small sample sizes have no power to estimate the true value of lambda, so this is not very meaningful in this dataset. We should decide on a strategy for analysis (as mentioned above, may want to run all models again with lambda fixed at 0 as a comparison for the supp info so we can discuss how that affects our results).
+The output also gives a maximum-likelihood estimation of lambda = 1.00, indicating that there is high phylogenetic signal in the residuals of the model (and that _caper_ used a lambda of 1 to set the variance-covariance matrix in the regression). However, small sample sizes have no power to estimate the true value of lambda, so this is not very meaningful in this dataset. We should decide on a strategy for analysis (as mentioned above, may want to run all models again with lambda fixed at 0 as a comparison for the supp info so we can discuss how that affects our results).
 
 ```{r}
 #Likelihood plot for Pagel's lambda 
