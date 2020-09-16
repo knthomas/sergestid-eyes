@@ -46,7 +46,7 @@ library(plotly)
 
 ## Morphological data
 
-Morphological measurements (eye diameter and body length) were taken from a mixture of fresh and preserved specimens. In total, 454 sergestid specimens were sampled from 15 species belonging to 11 genera and two subgroups (Sergestes and Sergia).
+Morphological measurements (eye diameter and body length) were taken from a mixture of fresh and preserved specimens. In total, 454 sergestid specimens were sampled from 15 species belonging to 11 genera and two subgroups (Sergestes and Sergia). Measurements were recorded to ±0.01mm, but we rounded all to the nearest ±0.1mm as we were not confident in the accuracy of such fine measurements taken with calipers on a rocking ship. 
 
 ```{r import-data}
 
@@ -62,7 +62,8 @@ specimens <- specimens_raw %>%
   mutate(Subgroup = str_to_title(Subgroup)) %>%
   mutate(Genus = str_to_title(Genus)) %>%
   mutate(genus_species = as.factor(paste(Genus, Species, sep = "_"))) %>%
-  mutate(pres_bin = recode_factor(Preservation, "ethanol" = "preserved", "paraformaldehyde" = "preserved", "fresh" = "fresh"))
+  mutate(pres_bin = recode_factor(Preservation, "ethanol" = "preserved", "paraformaldehyde" = "preserved", "fresh" = "fresh")) %>%
+  mutate_if(is.numeric,round, 1)
 
 
 # Species traits  ------
@@ -150,7 +151,7 @@ plot.phylo(tree, #phylogeny to plot
 
 ## Eye-body allometry in each species
 
-We first examine ontogenetic eye diameter-body length allometry across 14 species of deep-sea sergestids. Allometric relationships were fit using standardised major axis regression via the _smatr_ v.3.4.8 package. For each species, standard model checks, model fits, and an interactive plot of data and fits are shown. Hover over the plots to see individual data values (this is super helpful for checking weird outliers that may be typos in the source datasheets).
+We first examine ontogenetic eye diameter-body length allometry across 14 species of deep-sea sergestids. Allometric relationships were fit using standardised major axis regression via the _smatr_ v.3.4.8 package. For each species, standard model checks, model fits, and an interactive plot of data and fits are shown. Hover over the plots to see individual data values.
 
 Note that for 3 of the species, a large/unreasonable outlier was present. We identified these by eye and they have been removed from the data subsets and analyses, but the outlier value is noted under each species header for reference, and a second plot including the outlier as a red diamond is included for transparency (these can go into the supplemental information if we want). 
 
@@ -206,7 +207,7 @@ ggplotly(plot_apec)
 
 ### _Allosergestes sargassi_
 
-Note: this species has a big outlier that was removed for analyses and plots (eye 0.67, body 12.97). 
+Note: this species has a big outlier that was removed for analyses and plots (eye 0.7, body 13.0). 
 
 ```{r dev-asar}
 
@@ -214,7 +215,7 @@ Note: this species has a big outlier that was removed for analyses and plots (ey
 #note: outlier removed
 asar <- specimens %>% 
   filter(genus_species == "Allosergestes_sargassi") %>%
-  filter(!(Eye_Diameter == 0.67 & Body_Length == 12.97))
+  filter(!(Eye_Diameter == round(0.67, 1) & Body_Length == round(12.97,1)))
 
 # Fit SMA model ------
 sma_asar <- sma(formula = Eye_Diameter ~ Body_Length, 
@@ -251,7 +252,7 @@ plot_asar <- ggplot(asar, aes(x = Body_Length, y = Eye_Diameter, col = Preservat
 
 #plot with outlier shown
 plot_asar_out <- plot_asar +
-  geom_point(aes(y=0.67, x=12.97), colour="red", pch = 18) +
+  geom_point(aes(y=round(0.67, 1), x=round(12.97,1)), colour="red", pch = 18) +
   ggtitle("Allosergestes sargassi + outlier")
   
 #plot
@@ -392,8 +393,6 @@ ggplotly(plot_dcor)
 
 ### _Deosergestes henseni_
 
-**Note: There is a data point for this species (eye 0.67, body 12.97) that is identical to one of the outliers I identified for _Allosergestes sargassi_. Seems unlikely to have two identical specimens for both eye diameter and body length to the 0.01 measurement, so have flagged to check in original data. This datapoint looks like sort of an outlier in this species as well, see interactive plot**
-
 ```{r dev-dhen}
 
 # Subset data -----
@@ -437,14 +436,14 @@ ggplotly(plot_dhen)
 
 ### _Gardinerosergia splendens_
 
-Note: this species has a big outlier that was removed for analyses and plots (eye 1.71, body 21.98). 
+Note: this species has a big outlier that was removed for analyses and plots (eye 1.7, body 22.0). 
 
 ```{r dev-gspl}
 
 # Subset data -----
 gspl <- specimens %>% 
   filter(genus_species == "Gardinerosergia_splendens") %>%
-  filter(!(Eye_Diameter == 1.71 & Body_Length == 21.98))
+  filter(!(Eye_Diameter == round(1.71, 1) & Body_Length == round(21.98,1)))
 
 # Fit SMA model ------
 sma_gspl <- sma(formula = Eye_Diameter ~ Body_Length, 
@@ -481,7 +480,7 @@ plot_gspl <- ggplot(gspl, aes(x = Body_Length, y = Eye_Diameter, col = Preservat
 
 #plot with outlier shown
 plot_gspl_out <- plot_gspl +
-  geom_point(aes(y=1.71, x=21.98), colour="red", pch = 18) +
+  geom_point(aes(y=round(1.71,1), x=round(21.98,1)), colour="red", pch = 18) +
   ggtitle("Gardinerosergia splendens + outlier")
   
 #plot
@@ -493,14 +492,14 @@ ggplotly(plot_gspl_out)
 
 ### _Neosergestes edwardsii_
 
-Note: this species has a big outlier that was removed for analyses and plots (eye 0.85, body 0.72). Also note that for this species, sample size was insufficient to estimate eye-body allometry (N = 6, p = 0.42 for correlation between eye size and body size). 
+Note: this species has a big outlier that was removed for analyses and plots (eye 0.9, body 0.7). Also note that for this species, sample size was insufficient to estimate eye-body allometry (N = 6, p = 0.57 for correlation between eye size and body size). 
 
 ```{r dev-nedw}
 
 # Subset data -----
 nedw <- specimens %>% 
   filter(genus_species == "Neosergestes_edwardsii") %>%
-  filter(!(Eye_Diameter == 0.85 & Body_Length == 0.72))
+  filter(!(Eye_Diameter == round(0.85,1) & Body_Length == round(0.72,1)))
 
 # Fit SMA model ------
 sma_nedw <- sma(formula = Eye_Diameter ~ Body_Length, 
@@ -534,7 +533,7 @@ plot_nedw <- ggplot(nedw, aes(x = Body_Length, y = Eye_Diameter, col = Preservat
 
 #plot with outlier shown
 plot_nedw_out <- plot_nedw +
-  geom_point(aes(x=0.85, y=0.72), colour="red", pch = 18) +
+  geom_point(aes(x=round(0.85,1), y=round(0.72,1)), colour="red", pch = 18) +
   ggtitle("Neosergestes edwardsii + outlier")
   
 #plot
@@ -674,6 +673,7 @@ ggplotly(plot_pgra)
 ```
 
 ### _Robustasergia robusta_
+
 ```{r dev-rrob}
 
 # Subset data -----
@@ -716,6 +716,7 @@ ggplotly(plot_rrob)
 ```
 
 ### _Robustosergia regalis_
+
 ```{r dev-rreg}
 
 # Subset data -----
@@ -758,6 +759,7 @@ ggplotly(plot_rreg)
 ```
 
 ### _Sergestes atlanticus_
+
 ```{r dev-satl}
 
 # Subset data -----
@@ -800,6 +802,7 @@ ggplotly(plot_satl)
 ```
 
 ### _Sergia tenuiremis_
+
 ```{r dev-sten}
 
 # Subset data -----
@@ -1010,7 +1013,7 @@ dev.off()
 
 ## Test for effect of preservation
 
-To test whether preservation type affects eye-body allometry, we have used an additional linear model that includes all specimens (n = 451) and species (n = 15). This model its a fits a regression of eye size vs. body size with both species and preservation type as covariates, and looks for an interaction effect between species and preservation. Specifically, this tests whether preservation type (fresh, ethanol, paraformaldehyde) has an effect on eye size, and whether this differs across species.
+To test whether preservation type affects eye-body allometry, we have used an additional linear model that includes all specimens after outliers removed (n = 451) and species (n = 15). This model its a fits a regression of eye size vs. body size with both species and preservation type as covariates, and looks for an interaction effect between species and preservation. Specifically, this tests whether preservation type (fresh, ethanol, paraformaldehyde) has an effect on eye size, and whether this differs across species.
 
 ```{r pres-smas}
 
@@ -1021,7 +1024,7 @@ lm_pres <- lm(formula = Eye_Diameter ~ Body_Length * genus_species * Preservatio
 anova(lm_pres)
 ```
 
-The ANOVA table shows that, as we knew, body length, species, and their interaction all have significant effects on eye size (this indicates species specific patterns of ontogenetic scaling). However, preservation also has a significant effect on eye size (p < 0.0001), as does the interaction between species and preservation (p = 0.005). 
+The ANOVA table shows that, as we knew, body length, species, and their interaction all have significant effects on eye size (this indicates species-specific patterns of ontogenetic scaling). However, preservation also has a significant effect on eye size (p < 0.0001), as does the interaction between species and preservation (p = 0.005). 
 
 This indicates that we should probably consider preservation error in our analyses, however, since the effect of preservation varies across species and some species have small sample sizes (especially if you break down by preservation type), it is tricky to come up with a correction. My suggestion is that we acknowledge this issue in the results and mention in the discussion how it might affect our interpretations, but also discuss that there does not seem to be a clear, consistent, large-mangitude effect of preservation across our species data plots. 
 
@@ -1090,6 +1093,8 @@ plotTree.wBars(tree.dev.plot, slope,
 dev.off()
 ```
 
+To test for phylogenetic signal, we fit Pagel's lambda using a maximum liklihood approach in _caper_ v.1.0.1. 
+
 ```{r slope-sig}
 
 #fit Pagel's lambda in caper
@@ -1104,13 +1109,13 @@ plot(pgls.profile(mod, "lambda"))
 
 ```
 
-A test for phylogenetic signal implemented in _caper_ indicates that the estimate for Pagel's lambda is 0.78. However, this estimate was not significant, and neither the upper or lower bound of the confidence interval could be estimated. This could indicate that there is no phylogenetic signal in these data, but could also be the result of our very small sample size of species for comparative evolutionary models (n = 14). Simulations have previously found that estimating Pagel's lambda for datasets of >20 species is problematic and often unreliable (see Freckleton et al., 2002). The likelihood profile of lamda shows that there is increased likelihood that it's somewhere between 0.5 and 1. 
+The estimate for Pagel's lambda is 0.78. However, this estimate was not significant, and neither the upper or lower bound of the confidence interval could be estimated. This could indicate that there is no phylogenetic signal in these data, but could also be the result of our very small sample size of species for comparative evolutionary models (n = 14). Simulations have previously found that estimating Pagel's lambda for datasets of >20 species is problematic and often unreliable (see Freckleton et al., 2002). The likelihood profile of lamda shows that there is increased likelihood that it's somewhere between 0.5 and 1. 
 
 # Evolutionary eye-body allometry in Sergestidae
 
-We next examine interspecific (evolutionary) eye-body allometry across sergestids using species means for eye diameter and body length. In calculating species means, we want to use adults only and also make sure that the data we use downstream for traits is relevent to the size class of individuals that we are taking species means from. The biggest concern for the Sergestidae is ontogenetic descent, as this is common across midwater animals and could convolute relationships between eye size and depth. However, body size for 'adult' depth distribution data we used in this paper was cutoff between 4-11mm depending on species, and our smallest specimen here is 12.97mm, so we are confident that species averages based on full species samples in our dataset are appropriate here. 
+We next examine interspecific (evolutionary) eye-body allometry across sergestids using species means for eye diameter and body length. In calculating species means, we want to use adults only and also make sure that the data we use downstream for traits is relevent to the size class of individuals that we are taking species means from. The biggest concern for the Sergestidae is ontogenetic descent, as this is common across midwater animals and could convolute relationships between eye size and depth. However, body size for 'adult' depth distribution data we used in this paper was cutoff between 4-11mm depending on species, and our smallest specimen here is 13 mm, so we are confident that species averages based on full species samples in our dataset are appropriate here. 
 
-Below, we use phylogenetic least-squares regression (using the _caper_ package) to fit the allometric relationship between species means for eye size and body length across 15 species of sergestids.
+Below, we use phylogenetic least-squares regression in _caper_ to fit the allometric relationship between species means for eye size and body length across 15 species of sergestids.
 
 Note: the removal of 3 outlier specimens has slightly changed 3 species means from what they are compiled in the original spreadsheet. I have recalculated all species means here from the specimen data with outliers removed and used those values for analyses. I merged these data with the trait data from the original species datasheet for analyses. 
 
