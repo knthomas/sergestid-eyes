@@ -1117,7 +1117,7 @@ We next examine interspecific (evolutionary) eye-body allometry across sergestid
 
 Below, we use phylogenetic least-squares regression in _caper_ to fit the allometric relationship between species means for eye size and body length across 15 species of sergestids.
 
-Note: the removal of 3 outlier specimens has slightly changed 3 species means from what they are compiled in the original spreadsheet. I have recalculated all species means here from the specimen data with outliers removed and used those values for analyses. I merged these data with the trait data from the original species datasheet for analyses. 
+Note: the removal of 3 outlier specimens has slightly changed 3 species means from what they were compiled in the original spreadsheet. I have recalculated all species means here from the specimen data with outliers removed and used those values for analyses. I merged these data with the trait data from the original species datasheet for analyses. 
 
 ```{r evo-pgls, results = "hide"}
 
@@ -1161,7 +1161,7 @@ plot(pgls_evo)
 par(mfrow = c(1, 1))
 ```
 
-The standard model checks for the PGLS of interspecific eye diameter vs. body length are a bit wonky. The residuals look bimodal (though don't have huge weird outliers) and the q-q plot is a bit funky. We'll have to dedide if we're ok with this. Assuming we accept thsi, model results are below. 
+The standard model checks for the PGLS of interspecific eye diameter vs. body length are a bit wonky. The residuals look bimodal when they should be normal (though don't have huge weird outliers) and the q-q plot also funky. We'll have to dedide if we're ok with this. We should discuss further. Assuming we accept this, model results are below. 
 
 ```{r}
 #print model output 
@@ -1206,11 +1206,11 @@ ggplotly(plot_evo)
 
 # Correlates of eye size in deep-sea sergestid shrimp
 
-Next, we examine whether varition in eye size is correlated with ecological variables related to light regime and vision: depth and bioluminescent organs. 
+Next, we examine whether variation in eye size is correlated with ecological variables related to light regime and vision: depth and bioluminescent organs. 
 
 ## Phylogenetic distribution of eye size and ecology
 
-Here, we examine how absolute and relative eye size vary across the sergestid phylogeny, and the corresponding distribution ecological variables. For visualizing relative eye size, we use the residuals of the PGLS fit for eye-body allometry, as these show eye size corrected by both body size and evolutionary relationships.  
+Here, we examine how absolute and relative eye size vary across the sergestid phylogeny, and the corresponding distribution ecological variables. For visualizing relative eye size, we use the residuals of the PGLS fit for eye-body allometry, as these show eye size corrected for both body size and evolutionary relationships.  
 
 Note: There are few enough species that it would be really nice to put an image of each species next to the phylogeny/associated data if you have them. If not photos, we could make vector images of species sillhouettes and scale them by body size. That would look nice and provide some additional useful information on the figure.
 
@@ -1386,7 +1386,7 @@ The above plot shows the average daytime (orange) and nighttime (blue) depths fo
 
 **Does eye size correlate with photophore complexity?**
 
-**Prediction:** Eye size may be largest in animals with unlensed photophores, followed by lensed and organ of pesta types, as organs that are visually more difficult to resolve will require greater sensitivity to light (note: should this say longer focal lengths or somethign like that for higer acuity, not sensitivity?). 
+**Prediction:** Eye size may be largest in animals with unlensed photophores, followed by lensed and organ of pesta types, as organs that are visually more difficult to resolve will require greater sensitivity to light (note: should this say longer focal lengths or something like that for higer acuity, not sensitivity?).
 
 ### Preliminary plots (photophores)
 
@@ -1417,8 +1417,6 @@ plot_rel_photo <- ggplot(data = species.phy, aes(x = reorder(Organ, pglsres, FUN
   ggtitle("Relative eye investment")
 
 ggplotly(plot_rel_photo) 
-
-
 ```
 
 It looks like species with organs of pesta tend to have smaller eye diameters and smaller relative eye sizes than species with other types of photophores (note: we may want to combine the non-pesta organs together for power as sample size within groups is really small). We next test this in an evolutionary framework.
@@ -1444,21 +1442,21 @@ par(mfrow = c(1,1)) #set plotting window back to one plot
 
 The model checks look pretty good here. 
 
-Next we can take a look at the overall significance of the main, 2-way, 3-way, etc. interactions and sequential sums of squares. Here we can see that body length has a significant effect on eye size (expected, we already knew that), but we also find that photophore complexity/type has a significant effect on eye size when the effect of body size is accounted for (p = 0.007).
+Next we can take a look at the overall significance of the main, 2-way, 3-way, etc. interactions and sequential sums of squares. Here we can see that body length has a significant effect on eye size (expected, we already knew that), but we also find that photophore complexity/type has a significant effect on eye size when the effect of body size is accounted for (p = 0.01).
 
 ```{r}
 #anova
 anova(pgls_photo)
 ```
 
-Finally, we look at the PGLS coefficients as well significance with respect to contrasts. Note that for a categorical variable, R will treat whichever factor comes first as the "control" and will test other factors for significant differences relative to that "control". Here, the comparison state ("control") for photophore complexity is set to "unlensed" (estimate listed under (Intercept) - that's why you don't see that state as a comparison line) and the other states show the *difference* in the estimated intercept for that state compared to the unlensed state, and whether that difference is significant. You can see that "none" and "lensed" show no significant difference in intercept from "unlensed", but that "pesta" does show a significant difference (p = 0.005) and has a lower intercept, indicating smaller relative eye size. 
+Finally, we look at the PGLS coefficients as well significance with respect to contrasts. Note that for a categorical variable, R will treat whichever factor comes first as the "control" and will test other factors for significant differences relative to that "control". Here, the comparison state ("control") for photophore complexity is set to "unlensed" (estimate listed under (Intercept) - that's why you don't see that state as a comparison line) and the other states show the *difference* in the estimated intercept for that state compared to the unlensed state, and whether that difference is significant. You can see that "none" and "lensed" show no significant difference in intercept from "unlensed", but that "pesta" does show a significant difference (p = 0.01) and has a lower intercept, indicating smaller relative eye size. 
 
 ```{r}
 #summary
 summary(pgls_photo)
 ```
 
-The output also includes the maximum-likelihood estimation of lambda, which represents the phylogenetic signal for PGLS model *residuals*. Here, the estimate for lambda is 0.00, which means that there is no phylogenetic signal. This doesn't mean we shouldn't include phylogeny in the model (no reason not to), but it does mean that it's the same result we would get if we assessed this without including phylogeny. This also doesn't mean that there is not phylogenetic signal in the individual traits that we put into the model; this is only lambda for the *model residuals*, not the traits themselves. However, as mentioned above, when you have <20 species the power to estimate lambda is not there, so we may want to consider running these models twice, one forcing lambda to 1 and another forcing lambda to 0, so that we can see how that affects our findings. That could help us in our interpretation. 
+The output also includes the maximum-likelihood estimation of lambda, which represents the phylogenetic signal for PGLS model *residuals*. Here, the estimate for lambda is 0.00, which means that there is no phylogenetic signal. This doesn't mean we shouldn't include phylogeny in the model (no reason not to), but it does mean that it's the same result we would get if we assessed this without including phylogeny. This also doesn't mean that there is not phylogenetic signal in the individual traits that we put into the model; this is only lambda for the *model residuals*, not the traits themselves. However, as mentioned above, when you have <20 species the power to estimate lambda is not there, so we may want to consider running these models twice, one forcing lambda to 1 and another forcing lambda to 0, so that we can see how that affects our findings. That could help us in our interpretation (because photophore type is tightly matched to clades, my expectation is that if we force lambda to 0.5 or 1, the relationship may not remain significant.)
 
 ```{r}
 #Likelihood plot for Pagel's lambda 
@@ -1478,7 +1476,7 @@ Note: Did we have predictions about how vertical migration (which we are factori
 
 ### Exploratory plots (depth)
 
-Before incorporating phylogeny, we can inspect the distribution of our data with scatter plots for absolute and relative eye size and body size vs. daytime and nighttime depth. In the below plots, daytime depths are orange and nighttime depths are blue. 
+Before incorporating phylogeny, we can inspect the distribution of our data with scatter plots for absolute and relative eye size and body size vs. daytime and nighttime depth. In the below interactive plots, daytime depths are orange and nighttime depths are blue. 
 
 ```{r depth-viz}
 
@@ -1516,7 +1514,7 @@ plot_rel_depth <- ggplot(species.phy, aes(x = eye_av/length_av, y = Day_Avg, tex
 ggplotly(plot_rel_depth)
 ```
 
-Visual inspection of the data shows that absolute eye size, body size, and relative eye size seem to increase with daytime depth, but it's not a perfect trend. Nighttime depth doesn't vary much across species, but to me it looks like the species with larger eyes might also have the larger differences between nighttime and daytime depths. We next test this in an evolutionary framework.
+Visual inspection of the data shows that absolute eye size, body size, and relative eye size maybe could seem to increase with daytime depth, but if so it's only driven by a couple of data points. Nighttime depth doesn't vary much across species, but to me it looks like the species with larger body sizes might also have the larger differences between nighttime and daytime depths. We next test this in an evolutionary framework.
 
 ### PGLS (depth)
 
@@ -1537,7 +1535,7 @@ plot(pgls_depth) #plot the linear model
 par(mfrow = c(1,1)) #set plotting window back to one plot
 ```
 
-The model checks are ok, residual structure a bit weird but probably due to sample size. Nothing too terrible. 
+The model checks here look good.  
 
 Next we can take a look at the overall significance of the main effects/interactions and sequential sums of squares. Here we can see that body length has a significant effect on eye size when depth is corrected for (expected, and we already knew that), but daytime depth, nighttime depth, and the interaction between daytime and nighttime depth do not have significant effects on eye size. 
 
