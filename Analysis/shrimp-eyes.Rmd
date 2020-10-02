@@ -946,7 +946,7 @@ This test shows that among 15 sergestid species (452 specimens), species signifi
 specimens_ed <- specimens %>%
   filter(!(genus_species == "Allosergestes_sargassi" & Eye_Diameter == 0.7 & Body_Length == 13.0)) %>% #(0.67, 12.97 raw)
   filter(!(genus_species == "Gardinerosergia_splendens" & Eye_Diameter == 1.7 & Body_Length == 22.0)) %>% #(1.71, 21.98 raw)
-  filter(!(genus_species == "Neosergestes_edwardsii" & Eye_Diameter == 0.9 & Body_Length == 0.7)) #(0.85, 0.72 raw)
+  filter(!(genus_species == "Neosergestes_edwardsii" & Eye_Diameter == 0.8 & Body_Length == 0.7)) #(0.85, 0.72 raw)
   
 #Remove Neosergestes edwardsii from dataset for SMA
 specimens_sma <- specimens_ed %>%
@@ -1061,7 +1061,7 @@ dev.off()
 
 ## Test for effect of preservation
 
-To test whether preservation type affects eye-body allometry, we have used an additional linear model that includes all specimens after outliers removed (n = 459) and species (n = 15). This model its a fits a regression of eye size vs. body size with both species and preservation type as covariates, and looks for an interaction effect between species and preservation. Specifically, this tests whether preservation type (fresh, ethanol, paraformaldehyde) has an effect on eye size, and whether this differs across species.
+To test whether preservation type affects eye-body allometry, we have used an additional linear model that includes all specimens after outliers removed (n = 456) and species (n = 15). This model its a fits a regression of eye size vs. body size with both species and preservation type as covariates, and looks for an interaction effect between species and preservation. Specifically, this tests whether preservation type (fresh, ethanol, paraformaldehyde) has an effect on eye size, and whether this differs across species.
 
 ```{r pres-smas}
 
@@ -1163,7 +1163,7 @@ The estimate for Pagel's lambda is 0.77. However, this estimate was not signific
 
 # Evolutionary eye-body allometry in Sergestidae
 
-We next examine interspecific (evolutionary) eye-body allometry across sergestids using species means for eye diameter and body length. In calculating species means, we want to use adults only and also make sure that the data we use downstream for traits is relevent to the size class of individuals that we are taking species means from. The biggest concern for the Sergestidae is ontogenetic descent, as this is common across midwater animals and could convolute relationships between eye size and depth. However, body size for 'adult' depth distribution data we used in this paper was cutoff between 4-11mm depending on species, and our smallest specimen here is 13 mm, so we are confident that species averages based on full species samples in our dataset are appropriate here. 
+We next examine interspecific (evolutionary) eye-body allometry across sergestids using species means for eye diameter and body length. In calculating species means, we want to use adults only and also make sure that the data we use downstream for traits is relevant to the size class of individuals that we are taking species means from. The biggest concern for the Sergestidae is ontogenetic descent, as this is common across midwater animals and could confound relationships between eye size and depth. However, body size for 'adult' depth distribution data we used in this paper was cutoff between 4-11mm depending on species, and our smallest specimen here is 13 mm, so we are confident that species averages based on full species samples in our dataset are appropriate here. 
 
 Below, we use phylogenetic least-squares regression in _caper_ to fit the allometric relationship between species means for eye size and body length across 15 species of sergestids.
 
