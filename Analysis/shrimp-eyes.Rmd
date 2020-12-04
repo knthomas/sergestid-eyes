@@ -38,6 +38,7 @@ library(ape)
 library(caper)
 library(phytools)
 library(smatr)
+library(lme4)
 library(tidyverse)
 library(plotly)
 ```
@@ -148,11 +149,11 @@ plot.phylo(tree, #phylogeny to plot
 ```
 
 
-# Ontogenetic eye-body allometry in Sergestidae
+# Static eye-body allometry in Sergestidae
 
 ## Eye-body allometry in each species
 
-We first examine ontogenetic eye diameter-body length allometry across 16 species of deep-sea sergestids. Allometric relationships were fit using standardised major axis regression via the _smatr_ v.3.4.8 package. For each species, standard model checks, model fits, and an interactive plot of data and fits are shown. Hover over the plots to see individual data values. Points are colored by the source of the sample (fresh collection or preserved).
+We first examine static post-metamorphosis eye diameter-body length allometry across 16 species of deep-sea sergestids. Allometric relationships were fit using standardised major axis regression via the _smatr_ v.3.4.8 package. For each species, standard model checks, model fits, and an interactive plot of data and fits are shown. Hover over the plots to see individual data values. Points are colored by the source of the sample (fresh collection or preserved).
 
 Note that for 3 of the species, a large/unreasonable outlier was present. We identified these by eye and they have been removed from the data subsets and analyses, but the outlier value is noted under each species header for reference, and a second plot including the outlier as a red diamond is included for transparency (these can go into the supplemental information if we want). 
 
@@ -165,7 +166,7 @@ col_pres <- c("ethanol" = "#a6cee3",
 
 ### _Allosergestes pectinatus_
 
-```{r dev-apec}
+```{r apec}
 
 # Subset data -----
 apec <- specimens %>% filter(genus_species == "Allosergestes_pectinatus")
@@ -210,7 +211,7 @@ ggplotly(plot_apec)
 
 Note: this species has a big outlier that was removed for analyses and plots (eye 0.7, body 13.0). 
 
-```{r dev-asar}
+```{r asar}
 
 # Subset data -----
 #note: outlier removed
@@ -265,7 +266,7 @@ ggplotly(plot_asar_out)
 
 ### _Challengerosergia hansjacobi_
 
-```{r dev-chan}
+```{r chan}
 
 # Subset data -----
 chan <- specimens %>% filter(genus_species == "Challengerosergia_hansjacobi")
@@ -308,7 +309,7 @@ ggplotly(plot_chan)
 
 ### _Challengerosergia talismani_
 
-```{r dev-ctal}
+```{r ctal}
 
 # Subset data -----
 ctal <- specimens %>% filter(genus_species == "Challengerosergia_talismani")
@@ -351,7 +352,7 @@ ggplotly(plot_ctal)
 
 ### _Deosergestes corniculum_
 
-```{r dev-dcor}
+```{r dcor}
 
 # Subset data -----
 dcor <- specimens %>% filter(genus_species == "Deosergestes_corniculum")
@@ -394,7 +395,7 @@ ggplotly(plot_dcor)
 
 ### _Deosergestes henseni_
 
-```{r dev-dhen}
+```{r dhen}
 
 # Subset data -----
 dhen <- specimens %>% filter(genus_species == "Deosergestes_henseni")
@@ -437,7 +438,7 @@ ggplotly(plot_dhen)
 
 ### _Eusergestes arcticus_ 
 
-```{r dev-euar}
+```{r euar}
 
 # Subset data -----
 euar <- specimens %>% filter(genus_species == "Eusergestes_arcticus")
@@ -482,7 +483,7 @@ ggplotly(plot_euar)
 
 Note: this species has a big outlier that was removed for analyses and plots (eye 1.7, body 22.0). 
 
-```{r dev-gspl}
+```{r gspl}
 
 # Subset data -----
 gspl <- specimens %>% 
@@ -538,7 +539,7 @@ ggplotly(plot_gspl_out)
 
 Note: this species has a big outlier that was removed for analyses and plots (eye 0.9, body 0.7). Also note that for this species, sample size was insufficient to estimate eye-body allometry (N = 6, p = 0.57 for correlation between eye size and body size). 
 
-```{r dev-nedw}
+```{r nedw}
 
 # Subset data -----
 nedw <- specimens %>% 
@@ -589,7 +590,7 @@ ggplotly(plot_nedw_out)
 
 ### _Parasergestes armatus_
 
-```{r dev-parm}
+```{r parm}
 
 # Subset data -----
 parm <- specimens %>% filter(genus_species == "Parasergestes_armatus")
@@ -632,7 +633,7 @@ ggplotly(plot_parm)
 
 ### _Parasergestes vigilax_
 
-```{r dev-pvig}
+```{r pvig}
 
 # Subset data -----
 pvig <- specimens %>% filter(genus_species == "Parasergestes_vigilax")
@@ -675,7 +676,7 @@ ggplotly(plot_pvig)
 
 ### _Phorcosergia grandis_
 
-```{r dev-pgra}
+```{r pgra}
 
 # Subset data -----
 pgra <- specimens %>% filter(genus_species == "Phorcosergia_grandis")
@@ -718,7 +719,7 @@ ggplotly(plot_pgra)
 
 ### _Robustasergia robusta_
 
-```{r dev-rrob}
+```{r rrob}
 
 # Subset data -----
 rrob <- specimens %>% filter(genus_species == "Robustasergia_robusta")
@@ -761,7 +762,7 @@ ggplotly(plot_rrob)
 
 ### _Robustosergia regalis_
 
-```{r dev-rreg}
+```{r rreg}
 
 # Subset data -----
 rreg <- specimens %>% filter(genus_species == "Robustosergia_regalis")
@@ -804,7 +805,7 @@ ggplotly(plot_rreg)
 
 ### _Sergestes atlanticus_
 
-```{r dev-satl}
+```{r satl}
 
 # Subset data -----
 satl <- specimens %>% filter(genus_species == "Sergestes_atlanticus")
@@ -847,7 +848,7 @@ ggplotly(plot_satl)
 
 ### _Sergia tenuiremis_
 
-```{r dev-sten}
+```{r sten}
 
 # Subset data -----
 sten <- specimens %>% filter(genus_species == "Sergia_tenuiremis")
@@ -888,26 +889,26 @@ plot_sten <- ggplot(sten, aes(x = Body_Length, y = Eye_Diameter, col = Preservat
 ggplotly(plot_sten)
 ```
 
-### Figure for developmental eye-body scaling across sergestids
+### Figure for static eye-body scaling across sergestid species
 
-```{r figure-dev, fig.width = 10, fig.height = 12, results = "hide"}
+```{r figure-static, fig.width = 10, fig.height = 12, results = "hide"}
 
 #make figure panels
-fig.a <- plot_parm + theme(legend.position = "none", axis.title.x = element_blank())
-fig.b <- plot_pvig + theme(legend.position = "none", axis.title.x = element_blank(), axis.title.y = element_blank())
-fig.c <- plot_dcor + theme(legend.position = "none", axis.title.x = element_blank(), axis.title.y = element_blank())
-fig.d <- plot_dhen + theme(legend.position = "none", axis.title.x = element_blank())
-fig.e <- plot_asar + theme(legend.position = "none", axis.title.x = element_blank(), axis.title.y = element_blank())
-fig.f <- plot_apec + theme(legend.position = "none", axis.title.x = element_blank(), axis.title.y = element_blank())
-fig.g <- plot_chan + theme(legend.position = "none", axis.title.x = element_blank())
-fig.h <- plot_ctal + theme(legend.position = "none", axis.title.x = element_blank(), axis.title.y = element_blank())
-fig.i <- plot_pgra + theme(legend.position = "none", axis.title.x = element_blank(), axis.title.y = element_blank())
-fig.j <- plot_sten + theme(legend.position = "none", axis.title.x = element_blank())
+fig.a <- plot_dcor + theme(legend.position = "none", axis.title.x = element_blank())
+fig.b <- plot_dhen + theme(legend.position = "none", axis.title.x = element_blank(), axis.title.y = element_blank())
+fig.c <- plot_apec + theme(legend.position = "none", axis.title.x = element_blank(), axis.title.y = element_blank())
+fig.d <- plot_asar + theme(legend.position = "none", axis.title.x = element_blank())
+fig.e <- plot_satl + theme(legend.position = "none", axis.title.x = element_blank(), axis.title.y = element_blank())
+fig.f <- plot_pvig + theme(legend.position = "none", axis.title.x = element_blank(), axis.title.y = element_blank())
+fig.g <- plot_parm + theme(legend.position = "none", axis.title.x = element_blank())
+fig.h <- plot_euar + theme(legend.position = "none", axis.title.x = element_blank(), axis.title.y = element_blank())
+fig.i <- plot_gspl + theme(legend.position = "none", axis.title.x = element_blank(), axis.title.y = element_blank())
+fig.j <- plot_rreg + theme(legend.position = "none", axis.title.x = element_blank())
 fig.k <- plot_rrob + theme(legend.position = "none", axis.title.x = element_blank(), axis.title.y = element_blank())
-fig.l <- plot_rreg + theme(legend.position = "none", axis.title.x = element_blank(), axis.title.y = element_blank())
-fig.m <- plot_gspl +theme(legend.position = "none")
-fig.n <- plot_satl + theme(legend.position = "none", axis.title.y = element_blank())
-fig.o <- plot_euar + theme(legend.position = "none", axis.title.y = element_blank())
+fig.l <- plot_pgra + theme(legend.position = "none", axis.title.x = element_blank(), axis.title.y = element_blank())
+fig.m <- plot_sten + theme(legend.position = "none")
+fig.n <- plot_ctal  + theme(legend.position = "none", axis.title.y = element_blank())
+fig.o <- plot_chan + theme(legend.position = "none", axis.title.y = element_blank())
 
 # arrange panels in figure
 plots <- plot_grid(fig.a, fig.b, fig.c, fig.d, fig.e, fig.f, fig.g, fig.h, fig.i, fig.j, fig.k, fig.l, fig.m, fig.n, fig.o, #list of plots to arrange in grid
@@ -926,16 +927,183 @@ plot_grid(plots, leg, nrow = 2, rel_heights = c(1, .01), align = 'vh')
 
 #export figure
 #png("../Figures/dev-allometry.png", width = 10, height = 12, units = "in", res = 500)
-pdf("../Figures/dev-allometry.pdf", width = 10, height = 12)
+pdf("../Figures/static-allometry.pdf", width = 10, height = 12)
 plot_grid(plots, leg, nrow = 2, rel_heights = c(1, .05), align = 'vh')
 dev.off()
 ```
 
-The plots here are scaled to fit the data, so they all look similar but the slopes are actually quite variable and I think pretty interesting. This could be worth exploring for a chunk of the paper, and we might consider examining variation in developmental scaling slopes as a factor of phylogeny and things like whether each species exhibits ontogenetic descent. 
 
-## Test whether species differ in ontogenetic allometry
+## Test whether species differ in static allometry
 
-We've looked at how eyes scale with body size within species, but are there significant differences in ontogenetic allometry across species? The _smatr_ package also allows you to test whether groups exhibit significant differences in allometric scaling (slopes or intercepts). Below, we again use standardized major axis regression to model the scaling of eye diameter with body length across all specimens measured and test whether we see significant differences in ontogenetic scaling across species. This is a bit redundant with above, but will provide statistical evidence of the (very big) difference in slopes among species. 
+We've looked at how eyes scale with body size within species, but are there significant differences in static allometry across species? Here we use two approaches: first, we compare linear mixed models with intercepts varying between species and slopes (+ intercepts) varying between species to see what best describes our data. Then, we look at pairwise comparisons among species to see which are driving these differences. 
+
+### Linear mixed model to test whether slopes vary across species
+
+Here, we use linear mixed models in the lme4 v.1.1.25 package to test species show differences in static eye-body allometric slopes. We fit 1) a constant-slope, variable intercept model to our eye and body size data with species as a random effect and 2) a variable slope model with the same effects, and then compared model fits by AIC scores. Both models are fit using reduced maximum likelihood (REML), as this approach is better than maximum likelihood (ML) for detecting differences in random effects among models, which is what we are testing here (ML is better for fixed effects). 
+
+First we removed the three outliers and the species with insufficient sampling (N. edwardsii) from our full specimen dataset, then ran each model. 
+
+```{r prep-data}
+#Remove outliers from specimen dataset
+specimens_ed <- specimens %>%
+  filter(!(genus_species == "Allosergestes_sargassi" & Eye_Diameter == 0.7 & Body_Length == 13.0)) %>% #(0.67, 12.97 raw)
+  filter(!(genus_species == "Gardinerosergia_splendens" & Eye_Diameter == 1.7 & Body_Length == 22.0)) %>% #(1.71, 21.98 raw)
+  filter(!(genus_species == "Neosergestes_edwardsii" & Eye_Diameter == 0.8 & Body_Length == 0.7)) #(0.85, 0.72 raw)
+
+#Remove species with insufficient sampling
+specimens_test <- specimens_ed %>%
+  filter(genus_species != "Neosergestes_edwardsii") %>%
+  mutate(species_text = as.factor(paste(Genus, Species, sep = " "))) # Add labels for species text
+
+```
+
+#### fixed slope model
+
+```{r fixed-slope}
+
+# variable intercepts model (species can have different intercepts but share mean slope) -------
+lme_fixed <- lmer(log10(Eye_Diameter) ~ log10(Body_Length) + (1|genus_species), 
+                  data = specimens_test)
+
+# summary 
+summary(lme_fixed)
+
+# intercepts (variable) and slope (constant)
+coef(lme_fixed)
+
+# AIC
+AIC(lme_fixed)
+
+#fixed effects
+fixef(lme_fixed)
+
+#confidence intervals
+## if these overlap zero, we do not have good support for significant effects
+## if .sig01, which is our estimate of the variability in the random effect is very large and very widely defined, t indicates we may have a lack of precision between our groups - either because the group effect is small between groups, we have too few groups to get a more precise estimate, we have too few units within each group, or a combination of all of the above.
+confint(lme_fixed, level = 0.95)
+
+```
+
+#### variable slope model 
+
+```{r variable-slope}
+# variable slopes model (species can have different slopes/interaction effect between body size and species on eye size) -------
+lme_variable <- lmer(log10(Eye_Diameter) ~ log10(Body_Length) + (1 + log10(Body_Length) | genus_species), 
+                     data = specimens_test)
+
+# summary
+summary(lme_variable)
+
+# intercepts (variable) and slope (constant)
+coef(lme_variable)
+
+
+# AIC
+AIC(lme_variable)
+
+#fixed effects
+fixef(lme_variable)
+
+#confidence intervals
+## if these overlap zero, we do not have good support for significant effects
+## if .sig01, which is our estimate of the variability in the random effect is very large and very widely defined, t indicates we may have a lack of precision between our groups - either because the group effect is small between groups, we have too few groups to get a more precise estimate, we have too few units within each group, or a combination of all of the above.
+confint(lme_variable, level = 0.95)
+```
+
+Note that the parameter estimates for slopes and intercepts for species groups are a bit different than those we estimated via OLS. That's because here, the model is looking across all the data for all the species, and finding a common mean slope/intercept as well as the group effects. Rather than assuming that the species we sampled are all possible species, fitting species as a random effect assumes that the species in our study are some random sampling of the possible species that exist, and that there is some true population mean among species. Here we do see differences across species, but the mixed model pulls the more extreme species toward the group mean (this is all based on variances, both within and between groups/species here). I think this is more appropriate for directly answering the question of whether species are following the same slope for static allometry or not, but it could be argued either way whether these slope and intercept estimates or the ones fitted individually to each species by SMA are more appropriate. If you are trying to predict eye size from body size, I would think that the individual species fit is more appropriate, beause that is a different question. So I think having both methods in the paper is reasonable (each addressing a specific, and different, question), but I am new to mixed models!
+
+#### compare models
+
+Then we can compare the two models via AIC and log likelihood. 
+
+```{r}
+
+#model AIC comparison
+AIC(lme_fixed, lme_variable)
+
+#log likelihood comparison
+anova(lme_fixed, lme_variable, refit=FALSE)
+```
+
+Here we find by comparing AIC scores and log likelihoods that the model with variable slopes and intercepts is better supported than the one with fixed slopes and variable intercepts. We have evidence here that species differ significantly in the slopes of their static allometries rather than following a shared trajectory. 
+
+
+### Test for significant effect of preservation as a covariate
+
+Here, we add preservation as a fixed effect into our linear mixed models of eye size vs. body size with species as a random effect. We have already selected the variable slopes model, so here we use a maximum likelihood approach (ML) to fit models that 1) don't include preservation as a covariate and 2) does include preservation as a covariate and then compare model fits. Note that when we chatted, I mentioned putting in preservation type as a random effect. However, I have read that random effects need to have more than 5 levels, and preservation type has only 3, so by default it needs to be fitted as a fixed effect here. 
+
+#### model without preservation type
+
+```{r no-pres}
+
+# variable slopes model (species can have different slopes/interaction effect between body size and species on eye size) -------
+lme_nopres <- lmer(log10(Eye_Diameter) ~ log10(Body_Length) + (1 + log10(Body_Length) | genus_species), 
+                   data = specimens_test,
+                   REML = FALSE) #uses ML instead of REML
+
+# summary
+summary(lme_nopres)
+
+# intercepts (variable) and slope (constant)
+coef(lme_nopres)
+
+# AIC
+AIC(lme_nopres)
+
+#fixed effects
+fixef(lme_nopres)
+
+#confidence intervals
+## if these overlap zero, we do not have good support for significant effects
+## if .sig01, which is our estimate of the variability in the random effect is very large and very widely defined, t indicates we may have a lack of precision between our groups - either because the group effect is small between groups, we have too few groups to get a more precise estimate, we have too few units within each group, or a combination of all of the above.
+confint(lme_nopres, level = 0.95)
+```
+
+#### model including preservation type
+
+```{r with-pres}
+
+#reorder levels for preservation so that contrasts will be compared to fresh samples
+specimens_test$Preservation <- factor(specimens_test$Preservation, 
+                                      levels = c("fresh", "ethanol", "paraformaldehyde"))
+
+# variable slopes model (species can have different slopes/interaction effect between body size and species on eye size) -------
+lme_withpres <- lmer(log10(Eye_Diameter) ~ log10(Body_Length) + Preservation + (1 + log10(Body_Length) | genus_species), 
+                   data = specimens_test,
+                   REML = FALSE) #uses ML instead of REML
+
+# summary
+summary(lme_withpres)
+
+# AIC
+AIC(lme_withpres)
+
+#fixed effects
+fixef(lme_withpres)
+
+#confidence intervals
+## if these overlap zero, we do not have good support for significant effects
+## if .sig01, which is our estimate of the variability in the random effect is very large and very widely defined, t indicates we may have a lack of precision between our groups - either because the group effect is small between groups, we have too few groups to get a more precise estimate, we have too few units within each group, or a combination of all of the above.
+confint(lme_withpres, level = 0.95)
+```
+
+#### compare models
+
+Then we can compare the two models via AIC and log likelihood. 
+
+```{r}
+
+#model AIC comparison
+AIC(lme_nopres, lme_withpres)
+
+#log likelihood comparison
+anova(lme_nopres, lme_withpres)
+```
+Here we see that the model that includes preservation type as a covariate is significantly better supported. If you take a look at the parameter estimates from the model, you can see that ethanol preservation has a negative effect on intercept (eye size compared to body size), but paraformaldehyde has a positive effect. Note also that these effects are very small, so while they are significantly affecting our models, they seem to have minor effects. I would use this to argue why we don't include preservation type in all our ecology ancovas; our power is already low due to small sample sizes and including preservation as a covariate would probalby overparamaterize our models. 
+
+### Linear SMA regression for pairwise comparisons among species slopes
+
+The _smatr_ package also allows you to test whether groups exhibit significant differences in allometric scaling (slopes or intercepts). Below, we again use standardized major axis regression to model the scaling of eye diameter with body length across all specimens measured and test whether we see significant differences in ontogenetic scaling across species. 
 
 *Note: As we did not have sufficient sampling to estimate eye-body allometry for _Neosergestes edwardsii_, I've removed it from the specimen dataset before fitting this model.
 
@@ -943,20 +1111,9 @@ This test shows that among 15 sergestid species (450 specimens), species signifi
 
 ```{r species-smas}
 
-#Remove outliers from specimen dataset
-specimens_ed <- specimens %>%
-  filter(!(genus_species == "Allosergestes_sargassi" & Eye_Diameter == 0.7 & Body_Length == 13.0)) %>% #(0.67, 12.97 raw)
-  filter(!(genus_species == "Gardinerosergia_splendens" & Eye_Diameter == 1.7 & Body_Length == 22.0)) %>% #(1.71, 21.98 raw)
-  filter(!(genus_species == "Neosergestes_edwardsii" & Eye_Diameter == 0.8 & Body_Length == 0.7)) #(0.85, 0.72 raw)
-  
-#Remove Neosergestes edwardsii from dataset for SMA
-specimens_sma <- specimens_ed %>%
-  filter(genus_species != "Neosergestes_edwardsii") %>%
-  mutate(species_text = as.factor(paste(Genus, Species, sep = " "))) # Add labels for species
-  
-# Model for developmental scaling across specimens grouped by species
+# Model for static allometry across specimens with species and species*body size interaction as covariates
 sma_species <- sma(formula = Eye_Diameter ~ Body_Length * genus_species, 
-            data = specimens_sma, 
+            data = specimens_test, 
             log = "xy", #sets both x and y variables as logged
             method="SMA", #defines SMA as model
             multcomp = TRUE, # adds pairwise comparisons between groups
@@ -977,28 +1134,48 @@ summary(sma_species)
 cc_species <- data.frame(coef(sma_species))
 ```
 
-This figure shows the ontogenetic allometry of all the species with sufficient sampling (n = 15). It's interactive, so you can click on different species in the legend to hide or show those points. That can be helpful for exploring patterns in a big mess of data. To me, it looks a bit like the smaller-bodied species have higher slopes? It looks like _Sergestes atlanticus_, _Allosergestes_pectinatus_, and _Parasergestes vigilax_ have different (higher) slopes compared to the other sergestids, and the other species differ a bit in slopes but more so in intercepts. 
+This figure shows the static allometry of all the species with sufficient sampling (n = 15). It's interactive, so you can click on different species in the legend to hide or show those points. That can be helpful for exploring patterns in a big mess of data. To me, it looks a bit like the smaller-bodied species have higher slopes? It looks like _Sergestes atlanticus_, _Allosergestes_pectinatus_, and _Parasergestes vigilax_ have different (higher) slopes compared to the other sergestids, and the other species differ a bit in slopes but more so in intercepts. You can probably pull out which species are driving the difference by looking across the pairwise comparisons. 
 
 ```{r species-fig, fig.width=9, fig.height=9}
-#make shape pallette
-shapes.sp <- c("Allosergestes pectinatus" = 21,
-              "Allosergestes sargassi" = 22, 
-              "Challengerosergia hansjacobi" = 23, 
-              "Challengerosergia talismani" = 24,
-              "Deosergestes corniculum" = 25, 
-              "Deosergestes henseni" = 21, 
-              "Eusergestes arcticus" = 22,
-              "Gardinerosergia splendens" = 23, 
-              "Parasergestes armatus" = 24, 
-              "Parasergestes vigilax" = 25, 
-              "Phorcosergia grandis" = 21, 
-              "Robustasergia robusta" = 22,
-              "Robustosergia regalis" = 23,
-              "Sergestes atlanticus" = 24,
-              "Sergia tenuiremis" = 25)
 
-# #make color pallette
-# cols.sp <- c("Allosergestes pectinatus" = "#a6cee3",
+#reorder factor levels for figure legend (phylo order)
+specimens_test$species_text <- factor(specimens_test$species_text, 
+                                      levels = c("Deosergestes corniculum",
+                                                 "Deosergestes henseni",
+                                                 "Allosergestes pectinatus",
+                                                 "Allosergestes sargassi",
+                                                 "Sergestes atlanticus",
+                                                 "Parasergestes vigilax",
+                                                 "Parasergestes armatus",
+                                                 "Eusergestes arcticus",
+                                                 "Gardinerosergia splendens",
+                                                 "Robustosergia regalis",
+                                                 "Robustasergia robusta",
+                                                 "Phorcosergia grandis",
+                                                 "Sergia tenuiremis",
+                                                 "Challengerosergia talismani",
+                                                 "Challengerosergia hansjacobi"))
+
+#make shape pallette
+shapes.sp <- c("Deosergestes corniculum" = 21,
+              "Deosergestes henseni" = 22, 
+              "Allosergestes pectinatus" = 23, 
+              "Allosergestes sargassi" = 24,
+              "Sergestes atlanticus" = 25, 
+              "Parasergestes vigilax" = 21, 
+              "Parasergestes armatus" = 22,
+              "Eusergestes arcticus" = 23, 
+             "Gardinerosergia splendens" = 24, 
+              "Robustosergia regalis" = 25, 
+              "Robustasergia robusta" = 21, 
+              "Phorcosergia grandis" = 22,
+              "Sergia tenuiremis" = 23,
+              "Challengerosergia talismani" = 24,
+              "Challengerosergia hansjacobi" = 25)
+
+
+#make color pallette
+# cols.sp <- c("Allosergestes pectinatus" = "#16ABA8",
 #               "Allosergestes sargassi" = "#1f78b4", 
 #               "Challengerosergia hansjacobi" = "#b2df8a", 
 #               "Challengerosergia talismani" = "#33a02c",
@@ -1009,38 +1186,37 @@ shapes.sp <- c("Allosergestes pectinatus" = 21,
 #               "Parasergestes armatus" = "#cab2d6", 
 #               "Parasergestes vigilax" = "#6a3d9a", 
 #               "Phorcosergia grandis" = "gray31" ,
-#               "Robustasergia robusta" = "black",
+#               "Robustasergia robusta" = "burlywood4",
 #               "Robustosergia regalis" = "maroon1",
 #               "Sergestes atlanticus" = "orchid1",
-#               "Sergia tenuiremis" = "burlywood4")
+#               "Sergia tenuiremis" = "black")
 
-#make color pallette
-cols.sp <- c("Allosergestes pectinatus" = "#16ABA8",
-              "Allosergestes sargassi" = "#1f78b4", 
-              "Challengerosergia hansjacobi" = "#b2df8a", 
-              "Challengerosergia talismani" = "#33a02c",
-              "Deosergestes corniculum" = "#fb9a99" , 
-              "Deosergestes henseni" = "#e31a1c", 
-              "Eusergestes arcticus" = "#fdbf6f", 
-              "Gardinerosergia splendens" = "#ff7f00", 
-              "Parasergestes armatus" = "#cab2d6", 
-              "Parasergestes vigilax" = "#6a3d9a", 
-              "Phorcosergia grandis" = "gray31" ,
-              "Robustasergia robusta" = "burlywood4",
-              "Robustosergia regalis" = "maroon1",
-              "Sergestes atlanticus" = "orchid1",
-              "Sergia tenuiremis" = "black")
+cols.sp <- c("Deosergestes corniculum" = "#16ABA8",
+              "Deosergestes henseni" = "#1f78b4", 
+              "Allosergestes pectinatus" = "#3acf75", 
+              "Allosergestes sargassi" = "#33a02c",
+              "Sergestes atlanticus" = "#fb9a99", 
+              "Parasergestes vigilax" = "#e31a1c", 
+              "Parasergestes armatus" = "#fdbf6f",
+              "Eusergestes arcticus" = "#ff7f00", 
+              "Gardinerosergia splendens" = "#cab2d6",
+              "Robustosergia regalis" = "#6a3d9a", 
+              "Robustasergia robusta" = "gray31",
+              "Phorcosergia grandis" = "burlywood4",
+              "Sergia tenuiremis" = "black",
+              "Challengerosergia talismani" = "maroon1",
+              "Challengerosergia hansjacobi" = "orchid1")
+
 
 #set s limits by species for plots
-limits <- specimens_sma %>%
+limits <- specimens_test %>%
   group_by(genus_species) %>%
   summarise(max = max(Body_Length, na.rm = TRUE),
             min = min(Body_Length, na.rm = TRUE))
 
-
 #make plot
-plot_species <- ggplot(specimens_sma, aes(x = Body_Length, y = Eye_Diameter, color =  species_text, shape = species_text, fill = species_text)) + 
-  geom_point(size = 2, alpha = 0.3) + 
+plot_species <- ggplot(specimens_test, aes(x = Body_Length, y = Eye_Diameter, color =  species_text, shape = species_text, fill = species_text)) + 
+  geom_point(size = 2, alpha = 0.35) + 
   scale_shape_manual(values = shapes.sp, name = "Species") + 
   scale_color_manual(values = cols.sp, name = "Species") +
   scale_fill_manual(values = cols.sp, name = "Species") +
@@ -1070,29 +1246,30 @@ ggplotly(plot_species)
 ```
 
 ```{r, results = "hide"}
+#make plot with alpha = 1 for legend
+plot_species_leg <- ggplot(specimens_test, aes(x = Body_Length, y = Eye_Diameter, color =  species_text, shape = species_text, fill = species_text)) + 
+  geom_point(size = 2, alpha = 1) + 
+  scale_shape_manual(values = shapes.sp, name = "Species") + 
+  scale_color_manual(values = cols.sp, name = "Species") +
+  scale_fill_manual(values = cols.sp, name = "Species") +
+  theme_bw() 
+
+# remove legend from previous plot
+plot <- plot_species + theme(legend.position = "none")
+
+# extract legend from this plot with alpha = 1
+leg <- get_legend(plot_species_leg)
+
+# construct full figure with transparent fig and non-transparent legend
+plot_grid(plot, leg, ncol = 2, rel_widths = c(1, .4))
+
 #export figure
 #png("../Figures/dev-species.png", width = 12, height = 12, units = "in", res = 500)
-pdf("../Figures/dev-species.pdf", width = 9, height = 5)
-plot_species
+pdf("../Figures/static-species.pdf", width = 9, height = 5)
+plot_grid(plot, leg, ncol = 2, rel_widths = c(1, .4))
 dev.off()
 ```
 
-## Test for effect of preservation
-
-To test whether preservation type affects eye-body allometry, we have used an additional linear model that includes all specimens after outliers removed (n = 456) and species (n = 15). This model its a fits a regression of eye size vs. body size with both species and preservation type as covariates, and looks for an interaction effect between species and preservation. Specifically, this tests whether preservation type (fresh, ethanol, paraformaldehyde) has an effect on eye size, and whether this differs across species.
-
-```{r pres-smas}
-
-# Model for developmental scaling across specimens * species * preservation
-lm_pres <- lm(formula = Eye_Diameter ~ Body_Length * genus_species * Preservation, data = specimens_ed) 
-
-#view anova table (see effects of variables)
-anova(lm_pres)
-```
-
-The ANOVA table shows that, as we knew, body length, species, and their interaction all have significant effects on eye size (this indicates species-specific patterns of ontogenetic scaling). However, preservation also has a significant effect on eye size (p < 0.0001), as does the interaction between species and preservation (p = 0.007). 
-
-This indicates that we should probably consider preservation error in our analyses, however, since the effect of preservation varies across species and some species have small sample sizes (especially if you break down by preservation type), it is tricky to come up with a correction. My suggestion is that we acknowledge this issue in the results and mention in the discussion how it might affect our interpretations, but also discuss that there does not seem to be a clear, consistent, large-mangnitude effect of preservation across our species data plots. 
 
 ## Phylogenetic distribution of allometric slopes
 
@@ -1181,7 +1358,7 @@ The estimate for Pagel's lambda is 0.77. However, this estimate was not signific
 
 # Evolutionary eye-body allometry in Sergestidae
 
-We next examine interspecific (evolutionary) eye-body allometry across sergestids using species means for eye diameter and body length. In calculating species means, we want to use adults only and also make sure that the data we use downstream for traits is relevant to the size class of individuals that we are taking species means from. The biggest concern for the Sergestidae is ontogenetic descent, as this is common across midwater animals and could confound relationships between eye size and depth. However, body size for 'adult' depth distribution data we used in this paper was cutoff between 4-11mm depending on species, and our smallest specimen here is 13 mm, so we are confident that species averages based on full species samples in our dataset are appropriate here. 
+We next examine evolutionary (interspecific) eye-body allometry across sergestids using species means for eye diameter and body length. In calculating species means, we want to use adults only and also make sure that the data we use downstream for traits is relevant to the size class of individuals that we are taking species means from. The biggest concern for the Sergestidae is ontogenetic descent, as this is common across midwater animals and could confound relationships between eye size and depth. However, body size for 'adult' depth distribution data we used in this paper was cutoff between 4-11mm depending on species, and our smallest specimen here is 13 mm, so we are confident that species averages based on full species samples in our dataset are appropriate here. 
 
 Below, we use phylogenetic least-squares regression in _caper_ to fit the allometric relationship between species means for eye size and body length across 16 species of sergestids.
 
@@ -1344,6 +1521,41 @@ ggplotly(plot_evo_bounds)
 
 ```
 
+
+We can also plot the static allometry for each species onto the evolutionary allometry (across species means). Most of the species have very similar static/intraspecific slopes to the evolutionary/interspecific pattern, but those few small-bodied species are the strange ones here too. 
+
+```{r}
+# Make plot 
+plot_evo_bounds2 <- ggplot(species, aes(x = Body_length, y = Eye_diameter, text = genus_species)) + 
+  geom_point(size = 2, alpha = 0.6) + 
+  scale_x_log10(name = "Body length (mm)") + #makes x axis log scale and named
+  scale_y_log10(name = "Eye diameter (mm)") + #makes y axis log scale and named
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Allosergestes_pectinatus")], xend = limits$max[which(limits$genus_species == "Allosergestes_pectinatus")], y = 10^(log10(limits$min[which(limits$genus_species == "Allosergestes_pectinatus")])*cc_species["Allosergestes_pectinatus", "slope"] + cc_species["Allosergestes_pectinatus", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Allosergestes_pectinatus")])*cc_species["Allosergestes_pectinatus", "slope"] + cc_species["Allosergestes_pectinatus", "elevation"])), color = "grey85") + #Allosergestes pectinatus adult scaling
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Allosergestes_sargassi")], xend = limits$max[which(limits$genus_species == "Allosergestes_sargassi")], y = 10^(log10(limits$min[which(limits$genus_species == "Allosergestes_sargassi")])*cc_species["Allosergestes_sargassi", "slope"] + cc_species["Allosergestes_sargassi", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Allosergestes_sargassi")])*cc_species["Allosergestes_sargassi", "slope"] + cc_species["Allosergestes_sargassi", "elevation"])), color = "grey85") + #Allosergestes_sargassi adult scaling
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Challengerosergia_hansjacobi")], xend = limits$max[which(limits$genus_species == "Challengerosergia_hansjacobi")], y = 10^(log10(limits$min[which(limits$genus_species == "Challengerosergia_hansjacobi")])*cc_species["Challengerosergia_hansjacobi", "slope"] + cc_species["Challengerosergia_hansjacobi", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Challengerosergia_hansjacobi")])*cc_species["Challengerosergia_hansjacobi", "slope"] + cc_species["Challengerosergia_hansjacobi", "elevation"])), color = "grey85") + #Challengerosergia_hansjacobi adult scaling
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Challengerosergia_talismani")], xend = limits$max[which(limits$genus_species == "Challengerosergia_talismani")], y = 10^(log10(limits$min[which(limits$genus_species == "Challengerosergia_talismani")])*cc_species["Challengerosergia_talismani", "slope"] + cc_species["Challengerosergia_talismani", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Challengerosergia_talismani")])*cc_species["Challengerosergia_talismani", "slope"] + cc_species["Challengerosergia_talismani", "elevation"])), color = "grey85") + #Challengerosergia_talismani adult scaling
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Deosergestes_corniculum")], xend = limits$max[which(limits$genus_species == "Deosergestes_corniculum")], y = 10^(log10(limits$min[which(limits$genus_species == "Deosergestes_corniculum")])*cc_species["Deosergestes_corniculum", "slope"] + cc_species["Deosergestes_corniculum", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Deosergestes_corniculum")])*cc_species["Deosergestes_corniculum", "slope"] + cc_species["Deosergestes_corniculum", "elevation"])), color = "grey85") + #Deosergestes_corniculum adult scaling
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Deosergestes_henseni")], xend = limits$max[which(limits$genus_species == "Deosergestes_henseni")], y = 10^(log10(limits$min[which(limits$genus_species == "Deosergestes_henseni")])*cc_species["Deosergestes_henseni", "slope"] + cc_species["Deosergestes_henseni", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Deosergestes_henseni")])*cc_species["Deosergestes_henseni", "slope"] + cc_species["Deosergestes_henseni", "elevation"])), color = "grey85") + #Deosergestes henseni adult scaling
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Gardinerosergia_splendens")], xend = limits$max[which(limits$genus_species == "Gardinerosergia_splendens")], y = 10^(log10(limits$min[which(limits$genus_species == "Gardinerosergia_splendens")])*cc_species["Gardinerosergia_splendens", "slope"] + cc_species["Gardinerosergia_splendens", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Gardinerosergia_splendens")])*cc_species["Gardinerosergia_splendens", "slope"] + cc_species["Gardinerosergia_splendens", "elevation"])), color = "grey85") + #Gardinerosergia splendens adult scaling
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Parasergestes_armatus")], xend = limits$max[which(limits$genus_species == "Parasergestes_armatus")], y = 10^(log10(limits$min[which(limits$genus_species == "Parasergestes_armatus")])*cc_species["Parasergestes_armatus", "slope"] + cc_species["Parasergestes_armatus", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Parasergestes_armatus")])*cc_species["Parasergestes_armatus", "slope"] + cc_species["Parasergestes_armatus", "elevation"])), color = "grey85") + #Parasergestes armatus adult scaling
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Parasergestes_vigilax")], xend = limits$max[which(limits$genus_species == "Parasergestes_vigilax")], y = 10^(log10(limits$min[which(limits$genus_species == "Parasergestes_vigilax")])*cc_species["Parasergestes_vigilax", "slope"] + cc_species["Parasergestes_vigilax", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Parasergestes_vigilax")])*cc_species["Parasergestes_vigilax", "slope"] + cc_species["Parasergestes_vigilax", "elevation"])), color = "grey85") + #Parasergestes vigilax adult scaling
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Phorcosergia_grandis")], xend = limits$max[which(limits$genus_species == "Phorcosergia_grandis")], y = 10^(log10(limits$min[which(limits$genus_species == "Phorcosergia_grandis")])*cc_species["Phorcosergia_grandis", "slope"] + cc_species["Phorcosergia_grandis", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Phorcosergia_grandis")])*cc_species["Phorcosergia_grandis", "slope"] + cc_species["Phorcosergia_grandis", "elevation"])), color = "grey85") + #Phorcosergia grandis adult scaling
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Robustasergia_robusta")], xend = limits$max[which(limits$genus_species == "Robustasergia_robusta")], y = 10^(log10(limits$min[which(limits$genus_species == "Robustasergia_robusta")])*cc_species["Robustasergia_robusta", "slope"] + cc_species["Robustasergia_robusta", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Robustasergia_robusta")])*cc_species["Robustasergia_robusta", "slope"] + cc_species["Robustasergia_robusta", "elevation"])), color = "grey85") + #Robustasergia robusta adult scaling
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Robustosergia_regalis")], xend = limits$max[which(limits$genus_species == "Robustosergia_regalis")], y = 10^(log10(limits$min[which(limits$genus_species == "Robustosergia_regalis")])*cc_species["Robustosergia_regalis", "slope"] + cc_species["Robustosergia_regalis", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Robustosergia_regalis")])*cc_species["Robustosergia_regalis", "slope"] + cc_species["Robustosergia_regalis", "elevation"])), color = "grey85") +
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Sergestes_atlanticus")], xend = limits$max[which(limits$genus_species == "Sergestes_atlanticus")], y = 10^(log10(limits$min[which(limits$genus_species == "Sergestes_atlanticus")])*cc_species["Sergestes_atlanticus", "slope"] + cc_species["Sergestes_atlanticus", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Sergestes_atlanticus")])*cc_species["Sergestes_atlanticus", "slope"] + cc_species["Sergestes_atlanticus", "elevation"])), color = "grey85") +
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Sergia_tenuiremis")], xend = limits$max[which(limits$genus_species == "Sergia_tenuiremis")], y = 10^(log10(limits$min[which(limits$genus_species == "Sergia_tenuiremis")])*cc_species["Sergia_tenuiremis", "slope"] + cc_species["Sergia_tenuiremis", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Sergia_tenuiremis")])*cc_species["Sergia_tenuiremis", "slope"] + cc_species["Sergia_tenuiremis", "elevation"])), color = "grey85") +
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Eusergestes_arcticus")], xend = limits$max[which(limits$genus_species == "Eusergestes_arcticus")], y = 10^(log10(limits$min[which(limits$genus_species == "Eusergestes_arcticus")])*cc_species["Eusergestes_arcticus", "slope"] + cc_species["Eusergestes_arcticus", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Eusergestes_arcticus")])*cc_species["Eusergestes_arcticus", "slope"] + cc_species["Eusergestes_arcticus", "elevation"])), color = "grey85") +
+  geom_abline(data = cc_pgls_evo0, aes(intercept = cc_pgls_evo0[1,1], slope = cc_pgls_evo0[2,1]), linetype = "solid") +
+  geom_abline(data = cc_pgls_evo1, aes(intercept = cc_pgls_evo1[1,1], slope = cc_pgls_evo1[2,1]), linetype = "dashed")
+
+# Interactive plot
+plot_evo_bounds2
+
+```
+
+
 # Correlates of eye size in deep-sea sergestid shrimp
 
 Next, we examine whether variation in eye size is correlated with ecological variables related to light regime and vision: depth and bioluminescent organs. 
@@ -1428,7 +1640,7 @@ legend(x = "bottomleft", legend = c("lensed", "none", "pesta", "unlensed"), pch 
 
 
 #Export figure------
-pdf("../Figures/phylo.pdf", width = 6, height = 4)
+pdf("../Figures/phylo-photo1.pdf", width = 6, height = 4)
 
 #plot tree with eye investment bars
 plotTree.wBars(tree.plot, releye, 
@@ -1512,7 +1724,7 @@ segments(1.05 + (max*0.0003), 1:length(max), 1.05 + (max*0.0003), 1:length(max),
 
 ```{r, results = "hide"}
 # export figure 
-pdf("../Figures/phylodepth.pdf", width = 8, height = 5.5)
+pdf("../Figures/phylo-depth.pdf", width = 8, height = 5.5)
 
 #Plot tree with depth ranges
 plot(tree.plot, 
@@ -1544,7 +1756,7 @@ dev.off()
 
 ```
 
-The above plot shows absolute eye size (purple dots scaled by eye diameter) and the average daytime (orange) and nighttime (blue) depths for each species in the phylogeny, as well as the maximum reported depth (black). Gray bars indicate vertical distance traveled during diel vertical migrations. Note that this plot is missing a scale bar, easier to add in Illustrator, but minimum depth at night (left/blue points) is 133m and maximum depth during the day (right/orange points) is 1750m. The maximum depth of occurance (black points) across species is 2300m.
+The above plot shows absolute eye size (purple dots scaled by eye diameter) and the average daytime (orange) and nighttime (blue) depths for each species in the phylogeny, as well as the maximum reported depth (black). Gray bars indicate vertical distance traveled during diel vertical migrations. Note that this plot is missing a scale bar, easier to add in Illustrator, but minimum depth at night (left/blue points) is 133m and maximum depth during the day (right/orange points) is 1750m. The maximum depth of occurrance (black points) across species is 2300m.
 
 
 ## Photophore complexity
@@ -1709,6 +1921,153 @@ species.comp2$dropped$tips #phylogeny
 species.comp2$dropped$unmatched.rows #dataset
 
 ```
+
+First we can look at the distribution of data again in these new states with a phylogeny visualization and with boxplots. 
+
+```{r eyesize-phylo2, results = "hide", fig.width=6, fig.height=4, fig.cap = "Phylogeny of the 15 sertestids sampled depicting absolute eye diameter (circles, colored by photophore state) and relative eye investment (bars scaled by the residuals from the PGLS of eye diameter vs. body length, lambda = 1)."}
+
+# Phylogeny with eye size and investment -------
+
+#color pallette for photophore groups
+col_photo2 <- c("lensed" = "#2ca25f", 
+                "none" = "#9A9D9E",
+                "pesta" = "#15D0F6",
+                "unlensed" = "#99d8c9")
+
+#plot tree with eye investment bars
+plotTree.wBars(tree.plot, releye, 
+               scale = 1.5, 
+               tip.labels = TRUE,
+               col = "gray",
+               offset = 1,
+               ftype = "bi",
+               fsize = 0.7)
+
+#add tip labels for absolute eye size
+tiplabels(cex = 1.5*aveye,
+          pch = 19, #shape of labels
+          col = unname(col_photo2[species.phy$Organ]),
+          offset = 0)
+
+#add legend for photophores
+legend(x = "bottomleft", legend = c("lensed", "none", "pesta", "unlensed"), pch = 22, pt.cex= 2, pt.bg = col_photo2, cex = 1, bty = "n", horiz = F)
+
+
+#Export figure------
+pdf("../Figures/phylo-photo2.pdf", width = 6, height = 4)
+
+#plot tree with eye investment bars
+plotTree.wBars(tree.plot, releye, 
+               scale = 1.5, 
+               tip.labels = TRUE,
+               col = "gray",
+               offset = 1,
+               ftype = "bi",
+               fsize = 0.7)
+
+#add tip labels for absolute eye size
+tiplabels(cex = 1.5*aveye,
+          pch = 19, #shape of labels
+          col = unname(col_photo2[species.phy$Organ]),
+          offset = 0)
+
+#add legend for photophores
+legend(x = "bottomleft", legend = c("lensed", "none", "pesta", "unlensed"), pch = 22, pt.cex= 2, pt.bg = col_photo2, cex = 1, bty = "n", horiz = F)
+
+
+dev.off()
+```
+
+
+```{r photo-viz2}
+
+#color pallette for photophore groups
+col_photo2 <- c("lensed" = "#2ca25f", 
+                "none" = "#9A9D9E",
+                "pesta" = "#15D0F6",
+                "unlensed" = "#99d8c9")
+
+sh_photo2 <- c("lensed" = 17, 
+                "none" = 18,
+                "pesta" = 19,
+                "unlensed" = 15)
+
+#Boxplots for absolute eye size across photophores -----
+plot_abs_photo2 <- ggplot(data = species2, aes(x = reorder(photo2, eye_av, FUN = mean), y = eye_av)) + 
+  geom_boxplot(notch = FALSE, outlier.shape = NA, alpha = 0.6) + #controls boxes
+  stat_summary(fun.y = mean, colour = "black", geom = "point", shape = 18, size = 3, show_guide = FALSE) + #controls what stats shown
+ geom_jitter(aes(x = photo2, y = eye_av, color = Organ, shape = Organ), size = 3, alpha = 0.9, position = position_jitter(0.15)) +
+  theme(text = element_text(size=14), panel.background = element_blank(), axis.line = element_line(colour = "black"), legend.key = element_blank()) + #controls background
+  scale_color_manual(values = col_photo2, name = "Photophore type", 
+                     breaks = c("pesta", "lensed", "unlensed", "none")) +
+  scale_shape_manual(values = sh_photo2, name = "Photophore type", 
+                     breaks = c("pesta", "lensed", "unlensed", "none")) +
+  xlab("Photophore complexity") +
+  ylab("Eye diameter (mm)") +
+  ggtitle("Absolute eye size")
+
+plot_abs_photo2
+
+#Boxplots for relative eye size across photophores -----
+plot_rel_photo2 <- ggplot(data = species2, aes(x = reorder(photo2, eye_av/length_av, FUN = mean), y = eye_av/length_av)) + 
+  geom_boxplot(notch = FALSE, outlier.shape = NA, alpha = 0.6) + #controls boxes
+  stat_summary(fun.y = mean, colour = "black", geom = "point", shape = 18, size = 3, show_guide = FALSE) + #controls what stats shown
+ geom_jitter(aes(x = photo2, y = eye_av/length_av, color = Organ, shape = Organ), size = 3, alpha = 0.9, position = position_jitter(0.15)) +
+  theme(text = element_text(size=14), panel.background = element_blank(), axis.line = element_line(colour = "black"), legend.key = element_blank()) + #controls background
+  scale_color_manual(values = col_photo2, name = "Photophore type", 
+                     breaks = c("pesta", "lensed", "unlensed", "none")) +
+  scale_shape_manual(values = sh_photo2, name = "Photophore type", 
+                     breaks = c("pesta", "lensed", "unlensed", "none")) +
+  xlab("Photophore complexity") +
+  ylab("Relative eye size (eye/body)") +
+  ggtitle("Relative eye size")
+
+plot_rel_photo2
+
+#Boxplots for residual eye investment across photophores -----
+plot_inv_photo2 <- ggplot(data = species2, aes(x = reorder(photo2, pglsres, FUN = mean), y = pglsres)) + 
+  geom_boxplot(notch = FALSE, outlier.shape = NA, alpha = 0.6) + #controls boxes
+  stat_summary(fun.y = mean, colour = "black", geom = "point", shape = 18, size = 3, show_guide = FALSE) + #controls what stats shown
+ geom_jitter(aes(x = photo2, y = pglsres, color = Organ, shape = Organ), size = 3, alpha = 0.9, position = position_jitter(0.15)) +
+  theme(text = element_text(size=14), panel.background = element_blank(), axis.line = element_line(colour = "black"), legend.key = element_blank()) + #controls background
+  scale_color_manual(values = col_photo2, name = "Photophore type", 
+                     breaks = c("pesta", "lensed", "unlensed", "none")) +
+  scale_shape_manual(values = sh_photo2, name = "Photophore type", 
+                     breaks = c("pesta", "lensed", "unlensed", "none")) +
+  xlab("Photophore complexity") +
+  ylab("Eye ~ body residuals") +
+  ggtitle("Residual eye investment")
+
+plot_inv_photo2
+
+# Make boxplot figure to export ----
+
+#name panels
+fig.a <- plot_abs_photo2 + theme(legend.position = "none") + ggtitle("")  + xlab("")
+fig.b <- plot_rel_photo2 + theme(legend.position = "none") + ggtitle("") + xlab("")
+fig.c <- plot_inv_photo2 + theme(legend.position = "none") + ggtitle("") + xlab("")
+
+#arrange plots in panels
+plots <- plot_grid(fig.a, fig.b, fig.c, #list of plots to arrange in grid
+           align = 'vh', #align horizontally and vertically
+           axis = 'lb',
+           labels = c("A", "B", "C"), #panel labels for figure
+           hjust = -1, #adjustment for panel labels
+           nrow = 1) #number of rows in grids
+
+# extract legend from Rana temporaria figure
+leg <- get_legend(fig.a + theme(legend.position="right"))
+
+
+#export figure
+pdf("../Figures/boxplots-photo.pdf", width = 10, height = 4)
+plot_grid(plots, leg, nrow = 1, rel_widths = c(1, .2))
+dev.off()
+
+
+```
+
+Then we can look at the pgls models.
 
 Here is the model fit with lambda fixed at 0 (no phylogenetic signal in model residuals). 
 
