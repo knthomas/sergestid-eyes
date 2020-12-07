@@ -1555,6 +1555,20 @@ plot_evo_bounds2
 
 ```
 
+```{r}
+#export evolutionary allometry figures to pdf
+
+#witout static allom
+pdf("../Figures/evo_allom.pdf", width = 4, height = 2.5)
+plot_evo_bounds
+dev.off()
+
+#with static allom
+pdf("../Figures/evo_allom-static.pdf", width = 4, height = 2.5)
+plot_evo_bounds2
+dev.off()
+
+```
 
 # Correlates of eye size in deep-sea sergestid shrimp
 
@@ -1993,7 +2007,7 @@ sh_photo2 <- c("lensed" = 17,
                 "unlensed" = 15)
 
 #Boxplots for absolute eye size across photophores -----
-plot_abs_photo2 <- ggplot(data = species2, aes(x = reorder(photo2, eye_av, FUN = mean), y = eye_av)) + 
+plot_abs_photo2 <- ggplot(data = species2, aes(x = factor(photo2, levels=c("pesta", "nonpesta","none")), y = eye_av)) + 
   geom_boxplot(notch = FALSE, outlier.shape = NA, alpha = 0.6) + #controls boxes
   stat_summary(fun.y = mean, colour = "black", geom = "point", shape = 18, size = 3, show_guide = FALSE) + #controls what stats shown
  geom_jitter(aes(x = photo2, y = eye_av, color = Organ, shape = Organ), size = 3, alpha = 0.9, position = position_jitter(0.15)) +
@@ -2009,7 +2023,7 @@ plot_abs_photo2 <- ggplot(data = species2, aes(x = reorder(photo2, eye_av, FUN =
 plot_abs_photo2
 
 #Boxplots for relative eye size across photophores -----
-plot_rel_photo2 <- ggplot(data = species2, aes(x = reorder(photo2, eye_av/length_av, FUN = mean), y = eye_av/length_av)) + 
+plot_rel_photo2 <- ggplot(data = species2, aes(x = factor(photo2, levels=c("pesta", "nonpesta","none")), y = eye_av/length_av)) + 
   geom_boxplot(notch = FALSE, outlier.shape = NA, alpha = 0.6) + #controls boxes
   stat_summary(fun.y = mean, colour = "black", geom = "point", shape = 18, size = 3, show_guide = FALSE) + #controls what stats shown
  geom_jitter(aes(x = photo2, y = eye_av/length_av, color = Organ, shape = Organ), size = 3, alpha = 0.9, position = position_jitter(0.15)) +
@@ -2025,7 +2039,7 @@ plot_rel_photo2 <- ggplot(data = species2, aes(x = reorder(photo2, eye_av/length
 plot_rel_photo2
 
 #Boxplots for residual eye investment across photophores -----
-plot_inv_photo2 <- ggplot(data = species2, aes(x = reorder(photo2, pglsres, FUN = mean), y = pglsres)) + 
+plot_inv_photo2 <- ggplot(data = species2, aes(x = factor(photo2, levels=c("pesta", "nonpesta","none")), y = pglsres)) + 
   geom_boxplot(notch = FALSE, outlier.shape = NA, alpha = 0.6) + #controls boxes
   stat_summary(fun.y = mean, colour = "black", geom = "point", shape = 18, size = 3, show_guide = FALSE) + #controls what stats shown
  geom_jitter(aes(x = photo2, y = pglsres, color = Organ, shape = Organ), size = 3, alpha = 0.9, position = position_jitter(0.15)) +
