@@ -1818,7 +1818,7 @@ Below, I run a PGLS model of log10(eye diameter) vs. log10(body length) with pho
 
 ```{r pgls-photo}
 
-#run PGLS modelusing the Maximum Liklihood estimate of lambda
+#run PGLS model using the Maximum Liklihood estimate of lambda
 pgls_photo <- pgls(log10(eye_av) ~ log10(length_av) + Organ, 
                data = species.comp, 
                lambda = "ML",
@@ -1925,7 +1925,8 @@ Here, I've reduced the number of states to the following: bioluminescent with or
 
 #recategorize photophore bins
 species2 <- species %>%
-  mutate(photo2 = recode(Organ, "lensed" = "nonpesta", "unlensed" = "nonpesta"))
+  mutate(photo2 = recode(Organ, "lensed" = "nonpesta", "unlensed" = "nonpesta")) %>%
+  mutate(photo2 = factor(photo2, levels = c("pesta","nonpesta","none")))
 
 #use caper function to combine phylogeny and data into one object (this function also matches species names in tree and dataset)
 species.comp2 <- comparative.data(data = species2, phy = tree, names.col = "Binomial", vcv = TRUE, na.omit = FALSE, warn.dropped = TRUE)
