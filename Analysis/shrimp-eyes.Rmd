@@ -1165,31 +1165,13 @@ shapes.sp <- c("Deosergestes corniculum" = 21,
               "Parasergestes vigilax" = 21, 
               "Parasergestes armatus" = 22,
               "Eusergestes arcticus" = 23, 
-             "Gardinerosergia splendens" = 24, 
+              "Gardinerosergia splendens" = 24, 
               "Robustosergia regalis" = 25, 
               "Robustasergia robusta" = 21, 
               "Phorcosergia grandis" = 22,
               "Sergia tenuiremis" = 23,
               "Challengerosergia talismani" = 24,
               "Challengerosergia hansjacobi" = 25)
-
-
-#make color pallette
-# cols.sp <- c("Allosergestes pectinatus" = "#16ABA8",
-#               "Allosergestes sargassi" = "#1f78b4", 
-#               "Challengerosergia hansjacobi" = "#b2df8a", 
-#               "Challengerosergia talismani" = "#33a02c",
-#               "Deosergestes corniculum" = "#fb9a99" , 
-#               "Deosergestes henseni" = "#e31a1c", 
-#               "Eusergestes arcticus" = "#fdbf6f", 
-#               "Gardinerosergia splendens" = "#ff7f00", 
-#               "Parasergestes armatus" = "#cab2d6", 
-#               "Parasergestes vigilax" = "#6a3d9a", 
-#               "Phorcosergia grandis" = "gray31" ,
-#               "Robustasergia robusta" = "burlywood4",
-#               "Robustosergia regalis" = "maroon1",
-#               "Sergestes atlanticus" = "orchid1",
-#               "Sergia tenuiremis" = "black")
 
 cols.sp <- c("Deosergestes corniculum" = "#16ABA8",
               "Deosergestes henseni" = "#1f78b4", 
@@ -1224,7 +1206,7 @@ plot_species <- ggplot(specimens_test, aes(x = Body_Length, y = Eye_Diameter, co
   scale_y_log10(name = "Eye diameter (mm)") + #makes y axis log scale and named
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.text = element_text(face = "italic")) +
-  geom_segment(aes(x = limits$min[which(limits$genus_species == "Allosergestes_pectinatus")], xend = limits$max[which(limits$genus_species == "Allosergestes_pectinatus")], y = 10^(log10(limits$min[which(limits$genus_species == "Allosergestes_pectinatus")])*cc_species["Allosergestes_pectinatus", "slope"] + cc_species["Allosergestes_pectinatus", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Allosergestes_pectinatus")])*cc_species["Allosergestes_pectinatus", "slope"] + cc_species["Allosergestes_pectinatus", "elevation"])), color = cols.sp["Allosergestes pectinatus"]) + #Rana temporaria adult scaling
+    geom_segment(aes(x = limits$min[which(limits$genus_species == "Allosergestes_pectinatus")], xend = limits$max[which(limits$genus_species == "Allosergestes_pectinatus")], y = 10^(log10(limits$min[which(limits$genus_species == "Allosergestes_pectinatus")])*cc_species["Allosergestes_pectinatus", "slope"] + cc_species["Allosergestes_pectinatus", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Allosergestes_pectinatus")])*cc_species["Allosergestes_pectinatus", "slope"] + cc_species["Allosergestes_pectinatus", "elevation"])), color = cols.sp["Allosergestes pectinatus"]) + #Rana temporaria adult scaling
   geom_segment(aes(x = limits$min[which(limits$genus_species == "Allosergestes_sargassi")], xend = limits$max[which(limits$genus_species == "Allosergestes_sargassi")], y = 10^(log10(limits$min[which(limits$genus_species == "Allosergestes_sargassi")])*cc_species["Allosergestes_sargassi", "slope"] + cc_species["Allosergestes_sargassi", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Allosergestes_sargassi")])*cc_species["Allosergestes_sargassi", "slope"] + cc_species["Allosergestes_sargassi", "elevation"])), color = cols.sp["Allosergestes sargassi"]) + #Allosergestes_sargassi adult scaling
   geom_segment(aes(x = limits$min[which(limits$genus_species == "Challengerosergia_hansjacobi")], xend = limits$max[which(limits$genus_species == "Challengerosergia_hansjacobi")], y = 10^(log10(limits$min[which(limits$genus_species == "Challengerosergia_hansjacobi")])*cc_species["Challengerosergia_hansjacobi", "slope"] + cc_species["Challengerosergia_hansjacobi", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Challengerosergia_hansjacobi")])*cc_species["Challengerosergia_hansjacobi", "slope"] + cc_species["Challengerosergia_hansjacobi", "elevation"])), color = cols.sp["Challengerosergia hansjacobi"]) + #Challengerosergia_hansjacobi adult scaling
   geom_segment(aes(x = limits$min[which(limits$genus_species == "Challengerosergia_talismani")], xend = limits$max[which(limits$genus_species == "Challengerosergia_talismani")], y = 10^(log10(limits$min[which(limits$genus_species == "Challengerosergia_talismani")])*cc_species["Challengerosergia_talismani", "slope"] + cc_species["Challengerosergia_talismani", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Challengerosergia_talismani")])*cc_species["Challengerosergia_talismani", "slope"] + cc_species["Challengerosergia_talismani", "elevation"])), color = cols.sp["Challengerosergia talismani"]) + #Challengerosergia_talismani adult scaling
@@ -1233,7 +1215,7 @@ plot_species <- ggplot(specimens_test, aes(x = Body_Length, y = Eye_Diameter, co
   geom_segment(aes(x = limits$min[which(limits$genus_species == "Gardinerosergia_splendens")], xend = limits$max[which(limits$genus_species == "Gardinerosergia_splendens")], y = 10^(log10(limits$min[which(limits$genus_species == "Gardinerosergia_splendens")])*cc_species["Gardinerosergia_splendens", "slope"] + cc_species["Gardinerosergia_splendens", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Gardinerosergia_splendens")])*cc_species["Gardinerosergia_splendens", "slope"] + cc_species["Gardinerosergia_splendens", "elevation"])), color = cols.sp["Gardinerosergia splendens"]) + #Gardinerosergia splendens adult scaling
   geom_segment(aes(x = limits$min[which(limits$genus_species == "Parasergestes_armatus")], xend = limits$max[which(limits$genus_species == "Parasergestes_armatus")], y = 10^(log10(limits$min[which(limits$genus_species == "Parasergestes_armatus")])*cc_species["Parasergestes_armatus", "slope"] + cc_species["Parasergestes_armatus", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Parasergestes_armatus")])*cc_species["Parasergestes_armatus", "slope"] + cc_species["Parasergestes_armatus", "elevation"])), color = cols.sp["Parasergestes armatus"]) + #Parasergestes armatus adult scaling
   geom_segment(aes(x = limits$min[which(limits$genus_species == "Parasergestes_vigilax")], xend = limits$max[which(limits$genus_species == "Parasergestes_vigilax")], y = 10^(log10(limits$min[which(limits$genus_species == "Parasergestes_vigilax")])*cc_species["Parasergestes_vigilax", "slope"] + cc_species["Parasergestes_vigilax", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Parasergestes_vigilax")])*cc_species["Parasergestes_vigilax", "slope"] + cc_species["Parasergestes_vigilax", "elevation"])), color = cols.sp["Parasergestes vigilax"]) + #Parasergestes vigilax adult scaling
-  geom_segment(aes(x = limits$min[which(limits$genus_species == "Phorcosergia_grandis")], xend = limits$max[which(limits$genus_species == "Phorcosergia_grandis")], y = 10^(log10(limits$min[which(limits$genus_species == "Phorcosergia_grandis")])*cc_species["Phorcosergia_grandis", "slope"] + cc_species["Phorcosergia_grandis", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Phorcosergia_grandis")])*cc_species["Phorcosergia_grandis", "slope"] + cc_species["Phorcosergia_grandis", "elevation"])), color = cols.sp["Hyla meridiondalis"]) + #Phorcosergia grandis adult scaling
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Phorcosergia_grandis")], xend = limits$max[which(limits$genus_species == "Phorcosergia_grandis")], y = 10^(log10(limits$min[which(limits$genus_species == "Phorcosergia_grandis")])*cc_species["Phorcosergia_grandis", "slope"] + cc_species["Phorcosergia_grandis", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Phorcosergia_grandis")])*cc_species["Phorcosergia_grandis", "slope"] + cc_species["Phorcosergia_grandis", "elevation"])), color = cols.sp["Phorcosergia grandis"]) + #Phorcosergia grandis adult scaling
   geom_segment(aes(x = limits$min[which(limits$genus_species == "Robustasergia_robusta")], xend = limits$max[which(limits$genus_species == "Robustasergia_robusta")], y = 10^(log10(limits$min[which(limits$genus_species == "Robustasergia_robusta")])*cc_species["Robustasergia_robusta", "slope"] + cc_species["Robustasergia_robusta", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Robustasergia_robusta")])*cc_species["Robustasergia_robusta", "slope"] + cc_species["Robustasergia_robusta", "elevation"])), color = cols.sp["Robustasergia robusta"]) + #Robustasergia robusta adult scaling
   geom_segment(aes(x = limits$min[which(limits$genus_species == "Robustosergia_regalis")], xend = limits$max[which(limits$genus_species == "Robustosergia_regalis")], y = 10^(log10(limits$min[which(limits$genus_species == "Robustosergia_regalis")])*cc_species["Robustosergia_regalis", "slope"] + cc_species["Robustosergia_regalis", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Robustosergia_regalis")])*cc_species["Robustosergia_regalis", "slope"] + cc_species["Robustosergia_regalis", "elevation"])), color = cols.sp["Robustosergia regalis"]) +
   geom_segment(aes(x = limits$min[which(limits$genus_species == "Sergestes_atlanticus")], xend = limits$max[which(limits$genus_species == "Sergestes_atlanticus")], y = 10^(log10(limits$min[which(limits$genus_species == "Sergestes_atlanticus")])*cc_species["Sergestes_atlanticus", "slope"] + cc_species["Sergestes_atlanticus", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Sergestes_atlanticus")])*cc_species["Sergestes_atlanticus", "slope"] + cc_species["Sergestes_atlanticus", "elevation"])), color = cols.sp["Sergestes atlanticus"]) +
@@ -1944,10 +1926,10 @@ First we can look at the distribution of data again in these new states with a p
 # Phylogeny with eye size and investment -------
 
 #color pallette for photophore groups
-col_photo2 <- c("lensed" = "#2ca25f", 
-                "none" = "#9A9D9E",
-                "pesta" = "#15D0F6",
-                "unlensed" = "#99d8c9")
+col_photo2 <- c("lensed" = "#008837", 
+                "none" = "#A6ACAF",
+                "pesta" = "#7b3294",
+                "unlensed" = "#a6dba0")
 
 #plot tree with eye investment bars
 plotTree.wBars(tree.plot, releye, 
@@ -1995,12 +1977,6 @@ dev.off()
 
 
 ```{r photo-viz2}
-
-#color pallette for photophore groups
-col_photo2 <- c("lensed" = "#2ca25f", 
-                "none" = "#9A9D9E",
-                "pesta" = "#15D0F6",
-                "unlensed" = "#99d8c9")
 
 sh_photo2 <- c("lensed" = 17, 
                 "none" = 18,
@@ -2496,7 +2472,31 @@ summary(pgls_depthrange1)
 anova(pgls_depthrange1)
 ```
 
-In both models bounding the possible true value of lambda, depth range does not have significant effects on eye size in these species.
+In the model with lambda set to 0, depth range has a significant effect on eye size. However, when lambda is set to 1 this effect is not significant. 
+
+Let's just see what happens with a lambda of 0.5 for better understanding.
+
+```{r lambda05-depthrange}
+
+#fit model for eye diameter ~ body length (lambda = 1)
+pgls_depthrange05 <- pgls(log10(eye_av) ~ log10(length_av) + Range,
+               data = species.comp, 
+               lambda = 0.5, #set lambda to 0.5
+               param.CI = 0.95)
+
+#check model assumptions
+par(mar = c(4,4,2,2))
+par(mfrow = c(2, 2))
+plot(pgls_depthrange1)
+par(mfrow = c(1, 1))
+
+#parameter estimates
+summary(pgls_depthrange05)
+
+anova(pgls_depthrange05)
+```
+At lambda = 0.5 depth range is not significant. 
+
 
 
 ## Habitat
