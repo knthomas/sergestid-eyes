@@ -66,7 +66,6 @@ specimens <- specimens_raw %>%
   mutate(pres_bin = recode_factor(Preservation, "ethanol" = "preserved", "paraformaldehyde" = "preserved", "fresh" = "fresh")) %>%
   mutate_if(is.numeric,round, 1)
 
-
 # Species traits  ------
 
 #import data
@@ -76,7 +75,9 @@ traits_raw <- data.frame(read.csv("../Data/species_data.csv", header=TRUE, na.st
 traits <- traits_raw %>%
   mutate(Genus = gsub('\\s+', '', Genus)) %>%
   mutate(genus_species = as.factor(paste(Genus, Species, sep = "_"))) %>%
-  mutate(Range = Day_Avg - Night_Avg)
+  mutate(Range = Day_Avg - Night_Avg) %>%
+  mutate(nightbin = ifelse(Night_Avg<1000, "less","more")) %>%
+  mutate(daybin = ifelse(Day_Avg<1000, "less","more"))
 
 # Show sampling -----
 
@@ -92,6 +93,7 @@ kable(counts[ , c("Subgroup", "Genus","Species","Sampled")], caption = "Species 
                       collapse_rows(columns = 1, valign = "top") %>%
                       scroll_box(height = "400px") 
 ```
+
 
 
 ## Molecular phylogeny
@@ -717,12 +719,12 @@ plot_pgra <- ggplot(pgra, aes(x = Body_Length, y = Eye_Diameter, col = Preservat
 ggplotly(plot_pgra)
 ```
 
-### _Robustasergia robusta_
+### _Robustosergia robusta_
 
 ```{r rrob}
 
 # Subset data -----
-rrob <- specimens %>% filter(genus_species == "Robustasergia_robusta")
+rrob <- specimens %>% filter(genus_species == "Robustosergia_robusta")
 
 # Fit SMA model ------
 sma_rrob <- sma(formula = Eye_Diameter ~ Body_Length, 
@@ -750,7 +752,7 @@ plot_rrob <- ggplot(rrob, aes(x = Body_Length, y = Eye_Diameter, col = Preservat
   scale_color_manual(values = col_pres, name = "Sample state", breaks = c("ethanol", "fresh", "paraformaldehyde")) +
   scale_x_log10(name = "Body length (mm)") + #makes x axis log scale and named
   scale_y_log10(name = "Eye diameter (mm)") + #makes y axis log scale and named
-  ggtitle("Robustasergia robusta") + 
+  ggtitle("Robustosergia robusta") + 
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), plot.title = element_text(face = "italic")) +
   geom_abline(data = cc_sma_rrob, aes(intercept = cc_sma_rrob[1,1], slope = cc_sma_rrob[2,1])) +
@@ -919,7 +921,7 @@ plots <- plot_grid(fig.a, fig.b, fig.c, fig.d, fig.e, fig.f, fig.g, fig.h, fig.i
            nrow = 5) #number of rows in grids
 
 #extract legend
-leg <- get_legend(fig.a + theme(legend.position="bottom"))
+leg <- get_legend(fig.e + theme(legend.position="bottom"))
 
 
 #view figure
@@ -1150,7 +1152,7 @@ specimens_test$species_text <- factor(specimens_test$species_text,
                                                  "Eusergestes arcticus",
                                                  "Gardinerosergia splendens",
                                                  "Robustosergia regalis",
-                                                 "Robustasergia robusta",
+                                                 "Robustosergia robusta",
                                                  "Phorcosergia grandis",
                                                  "Sergia tenuiremis",
                                                  "Challengerosergia talismani",
@@ -1167,27 +1169,48 @@ shapes.sp <- c("Deosergestes corniculum" = 21,
               "Eusergestes arcticus" = 23, 
               "Gardinerosergia splendens" = 24, 
               "Robustosergia regalis" = 25, 
-              "Robustasergia robusta" = 21, 
+              "Robustosergia robusta" = 21, 
               "Phorcosergia grandis" = 22,
               "Sergia tenuiremis" = 23,
               "Challengerosergia talismani" = 24,
               "Challengerosergia hansjacobi" = 25)
 
+#rainbow palette
 cols.sp <- c("Deosergestes corniculum" = "#16ABA8",
-              "Deosergestes henseni" = "#1f78b4", 
-              "Allosergestes pectinatus" = "#3acf75", 
+              "Deosergestes henseni" = "#1f78b4",
+              "Allosergestes pectinatus" = "#3acf75",
               "Allosergestes sargassi" = "#33a02c",
-              "Sergestes atlanticus" = "#fb9a99", 
-              "Parasergestes vigilax" = "#e31a1c", 
+              "Sergestes atlanticus" = "#fb9a99",
+              "Parasergestes vigilax" = "#e31a1c",
               "Parasergestes armatus" = "#fdbf6f",
-              "Eusergestes arcticus" = "#ff7f00", 
+              "Eusergestes arcticus" = "#ff7f00",
               "Gardinerosergia splendens" = "#cab2d6",
-              "Robustosergia regalis" = "#6a3d9a", 
-              "Robustasergia robusta" = "gray31",
+              "Robustosergia regalis" = "#6a3d9a",
+              "Robustosergia robusta" = "gray31",
               "Phorcosergia grandis" = "burlywood4",
               "Sergia tenuiremis" = "black",
               "Challengerosergia talismani" = "maroon1",
               "Challengerosergia hansjacobi" = "orchid1")
+
+#sergia/sergestes green purple pallette
+# cols.sp <- c(#Sergestes group
+#               "Deosergestes corniculum" = "#512E5F",
+#               "Deosergestes henseni" = "#633974", 
+#               "Allosergestes pectinatus" = "#76448A", 
+#               "Allosergestes sargassi" = "#884EA0",
+#               "Sergestes atlanticus" = "#9B59B6", 
+#               #"Neosergestes edwardsii" = "#AF7AC5"
+#               "Parasergestes vigilax" = "#C39BD3", 
+#               "Parasergestes armatus" = "#D7BDE2",
+#               "Eusergestes arcticus" = "#EBDEF0", 
+#              #Sergia group
+#               "Gardinerosergia splendens" = "#D4EFDF",
+#               "Robustosergia regalis" = "#A9DFBF", 
+#               "Robustosergia robusta" = "#52BE80",
+#               "Phorcosergia grandis" = "#27AE60",
+#               "Sergia tenuiremis" = "#1E8449",
+#               "Challengerosergia talismani" = "#196F3D",
+#               "Challengerosergia hansjacobi" = "#145A32")
 
 
 #set s limits by species for plots
@@ -1198,12 +1221,12 @@ limits <- specimens_test %>%
 
 #make plot
 plot_species <- ggplot(specimens_test, aes(x = Body_Length, y = Eye_Diameter, color =  species_text, shape = species_text, fill = species_text)) + 
-  geom_point(size = 2, alpha = 0.35) + 
+  geom_point(size = 2, alpha = 0.4) + 
   scale_shape_manual(values = shapes.sp, name = "Species") + 
   scale_color_manual(values = cols.sp, name = "Species") +
   scale_fill_manual(values = cols.sp, name = "Species") +
-  scale_x_log10(name = "Body length (mm)") + #makes x axis log scale and named
-  scale_y_log10(name = "Eye diameter (mm)") + #makes y axis log scale and named
+  scale_x_log10(name = "Body length (mm)", breaks = c(15,20,30,50,100)) + #makes x axis log scale and named
+  scale_y_log10(name = "Eye diameter (mm)", breaks = c(0.2,0.3,0.5,1, 2.6)) + #makes y axis log scale and named
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.text = element_text(face = "italic")) +
     geom_segment(aes(x = limits$min[which(limits$genus_species == "Allosergestes_pectinatus")], xend = limits$max[which(limits$genus_species == "Allosergestes_pectinatus")], y = 10^(log10(limits$min[which(limits$genus_species == "Allosergestes_pectinatus")])*cc_species["Allosergestes_pectinatus", "slope"] + cc_species["Allosergestes_pectinatus", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Allosergestes_pectinatus")])*cc_species["Allosergestes_pectinatus", "slope"] + cc_species["Allosergestes_pectinatus", "elevation"])), color = cols.sp["Allosergestes pectinatus"]) + #Rana temporaria adult scaling
@@ -1216,11 +1239,12 @@ plot_species <- ggplot(specimens_test, aes(x = Body_Length, y = Eye_Diameter, co
   geom_segment(aes(x = limits$min[which(limits$genus_species == "Parasergestes_armatus")], xend = limits$max[which(limits$genus_species == "Parasergestes_armatus")], y = 10^(log10(limits$min[which(limits$genus_species == "Parasergestes_armatus")])*cc_species["Parasergestes_armatus", "slope"] + cc_species["Parasergestes_armatus", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Parasergestes_armatus")])*cc_species["Parasergestes_armatus", "slope"] + cc_species["Parasergestes_armatus", "elevation"])), color = cols.sp["Parasergestes armatus"]) + #Parasergestes armatus adult scaling
   geom_segment(aes(x = limits$min[which(limits$genus_species == "Parasergestes_vigilax")], xend = limits$max[which(limits$genus_species == "Parasergestes_vigilax")], y = 10^(log10(limits$min[which(limits$genus_species == "Parasergestes_vigilax")])*cc_species["Parasergestes_vigilax", "slope"] + cc_species["Parasergestes_vigilax", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Parasergestes_vigilax")])*cc_species["Parasergestes_vigilax", "slope"] + cc_species["Parasergestes_vigilax", "elevation"])), color = cols.sp["Parasergestes vigilax"]) + #Parasergestes vigilax adult scaling
   geom_segment(aes(x = limits$min[which(limits$genus_species == "Phorcosergia_grandis")], xend = limits$max[which(limits$genus_species == "Phorcosergia_grandis")], y = 10^(log10(limits$min[which(limits$genus_species == "Phorcosergia_grandis")])*cc_species["Phorcosergia_grandis", "slope"] + cc_species["Phorcosergia_grandis", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Phorcosergia_grandis")])*cc_species["Phorcosergia_grandis", "slope"] + cc_species["Phorcosergia_grandis", "elevation"])), color = cols.sp["Phorcosergia grandis"]) + #Phorcosergia grandis adult scaling
-  geom_segment(aes(x = limits$min[which(limits$genus_species == "Robustasergia_robusta")], xend = limits$max[which(limits$genus_species == "Robustasergia_robusta")], y = 10^(log10(limits$min[which(limits$genus_species == "Robustasergia_robusta")])*cc_species["Robustasergia_robusta", "slope"] + cc_species["Robustasergia_robusta", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Robustasergia_robusta")])*cc_species["Robustasergia_robusta", "slope"] + cc_species["Robustasergia_robusta", "elevation"])), color = cols.sp["Robustasergia robusta"]) + #Robustasergia robusta adult scaling
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Robustosergia_robusta")], xend = limits$max[which(limits$genus_species == "Robustosergia_robusta")], y = 10^(log10(limits$min[which(limits$genus_species == "Robustosergia_robusta")])*cc_species["Robustosergia_robusta", "slope"] + cc_species["Robustosergia_robusta", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Robustosergia_robusta")])*cc_species["Robustosergia_robusta", "slope"] + cc_species["Robustosergia_robusta", "elevation"])), color = cols.sp["Robustosergia robusta"]) + #Robustosergia robusta adult scaling
   geom_segment(aes(x = limits$min[which(limits$genus_species == "Robustosergia_regalis")], xend = limits$max[which(limits$genus_species == "Robustosergia_regalis")], y = 10^(log10(limits$min[which(limits$genus_species == "Robustosergia_regalis")])*cc_species["Robustosergia_regalis", "slope"] + cc_species["Robustosergia_regalis", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Robustosergia_regalis")])*cc_species["Robustosergia_regalis", "slope"] + cc_species["Robustosergia_regalis", "elevation"])), color = cols.sp["Robustosergia regalis"]) +
   geom_segment(aes(x = limits$min[which(limits$genus_species == "Sergestes_atlanticus")], xend = limits$max[which(limits$genus_species == "Sergestes_atlanticus")], y = 10^(log10(limits$min[which(limits$genus_species == "Sergestes_atlanticus")])*cc_species["Sergestes_atlanticus", "slope"] + cc_species["Sergestes_atlanticus", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Sergestes_atlanticus")])*cc_species["Sergestes_atlanticus", "slope"] + cc_species["Sergestes_atlanticus", "elevation"])), color = cols.sp["Sergestes atlanticus"]) +
   geom_segment(aes(x = limits$min[which(limits$genus_species == "Sergia_tenuiremis")], xend = limits$max[which(limits$genus_species == "Sergia_tenuiremis")], y = 10^(log10(limits$min[which(limits$genus_species == "Sergia_tenuiremis")])*cc_species["Sergia_tenuiremis", "slope"] + cc_species["Sergia_tenuiremis", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Sergia_tenuiremis")])*cc_species["Sergia_tenuiremis", "slope"] + cc_species["Sergia_tenuiremis", "elevation"])), color = cols.sp["Sergia tenuiremis"])+
-  geom_segment(aes(x = limits$min[which(limits$genus_species == "Eusergestes_arcticus")], xend = limits$max[which(limits$genus_species == "Eusergestes_arcticus")], y = 10^(log10(limits$min[which(limits$genus_species == "Eusergestes_arcticus")])*cc_species["Eusergestes_arcticus", "slope"] + cc_species["Eusergestes_arcticus", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Eusergestes_arcticus")])*cc_species["Eusergestes_arcticus", "slope"] + cc_species["Eusergestes_arcticus", "elevation"])), color = cols.sp["Eusergestes arcticus"])
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Eusergestes_arcticus")], xend = limits$max[which(limits$genus_species == "Eusergestes_arcticus")], y = 10^(log10(limits$min[which(limits$genus_species == "Eusergestes_arcticus")])*cc_species["Eusergestes_arcticus", "slope"] + cc_species["Eusergestes_arcticus", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Eusergestes_arcticus")])*cc_species["Eusergestes_arcticus", "slope"] + cc_species["Eusergestes_arcticus", "elevation"])), color = cols.sp["Eusergestes arcticus"])+
+  theme(legend.text = element_text(face = "italic"))
 
 
 #interactive plot
@@ -1234,7 +1258,8 @@ plot_species_leg <- ggplot(specimens_test, aes(x = Body_Length, y = Eye_Diameter
   scale_shape_manual(values = shapes.sp, name = "Species") + 
   scale_color_manual(values = cols.sp, name = "Species") +
   scale_fill_manual(values = cols.sp, name = "Species") +
-  theme_bw() 
+  theme_bw() +
+  theme(legend.text = element_text(face = "italic"))
 
 # remove legend from previous plot
 plot <- plot_species + theme(legend.position = "none")
@@ -1360,7 +1385,8 @@ sp_means <- specimens_ed %>%
 #Merge with species trait data stored in dataframe 'species'
 species <- traits %>%
   left_join(sp_means, by = "genus_species") %>%
-  mutate(Organ = factor(Organ, levels = c("pesta","lensed", "unlensed", "none")))
+  mutate(Organ = factor(Organ, levels = c("pesta","lensed", "unlensed", "none"))) %>%
+  mutate(species_text = as.factor(paste(Genus, Species, sep = " "))) # Add labels for species text 
 
 #check that names match in dataframe and tree
 name.check(phy = tree, data = species, data.names = species$Binomial)
@@ -1503,11 +1529,116 @@ plot_evo_bounds <- ggplot(species, aes(x = Body_length, y = Eye_diameter, text =
 ggplotly(plot_evo_bounds)
 
 ```
+```{r}
+
+
+#reorder factor levels for figure legend (phylo order)
+species$species_text <- factor(species$species_text, 
+                                      levels = c("Deosergestes corniculum",
+                                                 "Deosergestes henseni",
+                                                 "Allosergestes pectinatus",
+                                                 "Allosergestes sargassi",
+                                                 "Sergestes atlanticus",
+                                                 "Neosergestes edwardsii",
+                                                 "Parasergestes vigilax",
+                                                 "Parasergestes armatus",
+                                                 "Eusergestes arcticus",
+                                                 "Gardinerosergia splendens",
+                                                 "Robustosergia regalis",
+                                                 "Robustosergia robusta",
+                                                 "Phorcosergia grandis",
+                                                 "Sergia tenuiremis",
+                                                 "Challengerosergia talismani",
+                                                 "Challengerosergia hansjacobi"))
+
+#make shape pallette
+shapes.sp <- c("Deosergestes corniculum" = 21,
+              "Deosergestes henseni" = 22, 
+              "Allosergestes pectinatus" = 23, 
+              "Allosergestes sargassi" = 24,
+              "Sergestes atlanticus" = 25, 
+              "Neosergestes edwardsii"= 23,
+              "Parasergestes vigilax" = 21, 
+              "Parasergestes armatus" = 22,
+              "Eusergestes arcticus" = 23, 
+              "Gardinerosergia splendens" = 24, 
+              "Robustosergia regalis" = 25, 
+              "Robustosergia robusta" = 21, 
+              "Phorcosergia grandis" = 22,
+              "Sergia tenuiremis" = 23,
+              "Challengerosergia talismani" = 24,
+              "Challengerosergia hansjacobi" = 25)
+
+#rainbow palette
+cols.sp <- c("Deosergestes corniculum" = "#16ABA8",
+              "Deosergestes henseni" = "#1f78b4",
+              "Allosergestes pectinatus" = "#3acf75",
+              "Allosergestes sargassi" = "#33a02c",
+              "Sergestes atlanticus" = "#fb9a99",
+              "Neosergestes edwardsii" = "#C2A8A3",
+              "Parasergestes vigilax" = "#e31a1c",
+              "Parasergestes armatus" = "#fdbf6f",
+              "Eusergestes arcticus" = "#ff7f00",
+              "Gardinerosergia splendens" = "#cab2d6",
+              "Robustosergia regalis" = "#6a3d9a",
+              "Robustosergia robusta" = "gray31",
+              "Phorcosergia grandis" = "burlywood4",
+              "Sergia tenuiremis" = "black",
+              "Challengerosergia talismani" = "maroon1",
+              "Challengerosergia hansjacobi" = "orchid1")
+
+#sergia/sergestes green purple pallette
+cols.sp <- c(#Sergestes group
+              "Deosergestes corniculum" = "#512E5F",
+              "Deosergestes henseni" = "#633974",
+              "Allosergestes pectinatus" = "#76448A",
+              "Allosergestes sargassi" = "#884EA0",
+              "Sergestes atlanticus" = "#9B59B6",
+              "Neosergestes edwardsii" = "#AF7AC5",
+              "Parasergestes vigilax" = "#C39BD3",
+              "Parasergestes armatus" = "#D7BDE2",
+              "Eusergestes arcticus" = "#EBDEF0",
+             #Sergia group
+              "Gardinerosergia splendens" = "#ABEBC6",
+              "Robustosergia regalis" = "#A9DFBF",
+              "Robustosergia robusta" = "#52BE80",
+              "Phorcosergia grandis" = "#27AE60",
+              "Sergia tenuiremis" = "#1E8449",
+              "Challengerosergia talismani" = "#196F3D",
+              "Challengerosergia hansjacobi" = "#145A32")
+
+  # Make plot 
+plot_evo_cols <- ggplot(species, aes(x = Body_length, y = Eye_diameter, color =  species_text, shape = species_text, fill = species_text)) + 
+  geom_point(size = 2, alpha = 1) + 
+  scale_shape_manual(values = shapes.sp, name = "Species") + 
+  scale_color_manual(values = cols.sp, name = "Species") +
+  scale_fill_manual(values = cols.sp, name = "Species") +
+  scale_x_log10(name = "Body length (mm)") + #makes x axis log scale and named
+  scale_y_log10(name = "Eye diameter (mm)", breaks = c(0.5, 0.7, 1, 1.8)) + #makes y axis log scale and named
+  theme_bw() +
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.text = element_text(face = "italic")) +
+  geom_abline(data = cc_pgls_evo0, aes(intercept = cc_pgls_evo0[1,1], slope = cc_pgls_evo0[2,1]), linetype = "solid") +
+  geom_abline(data = cc_pgls_evo1, aes(intercept = cc_pgls_evo1[1,1], slope = cc_pgls_evo1[2,1]), linetype = "dashed")
+  
+
+# Interactive plot
+ggplotly(plot_evo_cols)
+```
+
+
+```{r}
+
+#witout static allom
+pdf("../Figures/Figure2-binary.pdf", width = 7, height = 4)
+plot_evo_cols
+dev.off()
+```
 
 
 We can also plot the static allometry for each species onto the evolutionary allometry (across species means). Most of the species have very similar static/intraspecific slopes to the evolutionary/interspecific pattern, but those few small-bodied species are the strange ones here too. 
 
 ```{r}
+
 # Make plot 
 plot_evo_bounds2 <- ggplot(species, aes(x = Body_length, y = Eye_diameter, text = genus_species)) + 
   geom_point(size = 2, alpha = 0.6) + 
@@ -1525,7 +1656,7 @@ plot_evo_bounds2 <- ggplot(species, aes(x = Body_length, y = Eye_diameter, text 
   geom_segment(aes(x = limits$min[which(limits$genus_species == "Parasergestes_armatus")], xend = limits$max[which(limits$genus_species == "Parasergestes_armatus")], y = 10^(log10(limits$min[which(limits$genus_species == "Parasergestes_armatus")])*cc_species["Parasergestes_armatus", "slope"] + cc_species["Parasergestes_armatus", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Parasergestes_armatus")])*cc_species["Parasergestes_armatus", "slope"] + cc_species["Parasergestes_armatus", "elevation"])), color = "grey85") + #Parasergestes armatus adult scaling
   geom_segment(aes(x = limits$min[which(limits$genus_species == "Parasergestes_vigilax")], xend = limits$max[which(limits$genus_species == "Parasergestes_vigilax")], y = 10^(log10(limits$min[which(limits$genus_species == "Parasergestes_vigilax")])*cc_species["Parasergestes_vigilax", "slope"] + cc_species["Parasergestes_vigilax", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Parasergestes_vigilax")])*cc_species["Parasergestes_vigilax", "slope"] + cc_species["Parasergestes_vigilax", "elevation"])), color = "grey85") + #Parasergestes vigilax adult scaling
   geom_segment(aes(x = limits$min[which(limits$genus_species == "Phorcosergia_grandis")], xend = limits$max[which(limits$genus_species == "Phorcosergia_grandis")], y = 10^(log10(limits$min[which(limits$genus_species == "Phorcosergia_grandis")])*cc_species["Phorcosergia_grandis", "slope"] + cc_species["Phorcosergia_grandis", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Phorcosergia_grandis")])*cc_species["Phorcosergia_grandis", "slope"] + cc_species["Phorcosergia_grandis", "elevation"])), color = "grey85") + #Phorcosergia grandis adult scaling
-  geom_segment(aes(x = limits$min[which(limits$genus_species == "Robustasergia_robusta")], xend = limits$max[which(limits$genus_species == "Robustasergia_robusta")], y = 10^(log10(limits$min[which(limits$genus_species == "Robustasergia_robusta")])*cc_species["Robustasergia_robusta", "slope"] + cc_species["Robustasergia_robusta", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Robustasergia_robusta")])*cc_species["Robustasergia_robusta", "slope"] + cc_species["Robustasergia_robusta", "elevation"])), color = "grey85") + #Robustasergia robusta adult scaling
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Robustosergia_robusta")], xend = limits$max[which(limits$genus_species == "Robustosergia_robusta")], y = 10^(log10(limits$min[which(limits$genus_species == "Robustosergia_robusta")])*cc_species["Robustosergia_robusta", "slope"] + cc_species["Robustosergia_robusta", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Robustosergia_robusta")])*cc_species["Robustosergia_robusta", "slope"] + cc_species["Robustosergia_robusta", "elevation"])), color = "grey85") + #Robustosergia robusta adult scaling
   geom_segment(aes(x = limits$min[which(limits$genus_species == "Robustosergia_regalis")], xend = limits$max[which(limits$genus_species == "Robustosergia_regalis")], y = 10^(log10(limits$min[which(limits$genus_species == "Robustosergia_regalis")])*cc_species["Robustosergia_regalis", "slope"] + cc_species["Robustosergia_regalis", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Robustosergia_regalis")])*cc_species["Robustosergia_regalis", "slope"] + cc_species["Robustosergia_regalis", "elevation"])), color = "grey85") +
   geom_segment(aes(x = limits$min[which(limits$genus_species == "Sergestes_atlanticus")], xend = limits$max[which(limits$genus_species == "Sergestes_atlanticus")], y = 10^(log10(limits$min[which(limits$genus_species == "Sergestes_atlanticus")])*cc_species["Sergestes_atlanticus", "slope"] + cc_species["Sergestes_atlanticus", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Sergestes_atlanticus")])*cc_species["Sergestes_atlanticus", "slope"] + cc_species["Sergestes_atlanticus", "elevation"])), color = "grey85") +
   geom_segment(aes(x = limits$min[which(limits$genus_species == "Sergia_tenuiremis")], xend = limits$max[which(limits$genus_species == "Sergia_tenuiremis")], y = 10^(log10(limits$min[which(limits$genus_species == "Sergia_tenuiremis")])*cc_species["Sergia_tenuiremis", "slope"] + cc_species["Sergia_tenuiremis", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Sergia_tenuiremis")])*cc_species["Sergia_tenuiremis", "slope"] + cc_species["Sergia_tenuiremis", "elevation"])), color = "grey85") +
@@ -1537,6 +1668,54 @@ plot_evo_bounds2 <- ggplot(species, aes(x = Body_length, y = Eye_diameter, text 
 plot_evo_bounds2
 
 ```
+
+```{r}
+
+#clade cols
+col_clade <- c("sergestes" = "#EBDEF0",
+               "sergia" = "#D4EFDF")
+
+# Make plot 
+plot_evo_slope_cols <- ggplot(species, aes(x = Body_length, y = Eye_diameter, color =  species_text, shape = species_text, fill = species_text)) + 
+  scale_x_log10(name = "Body length (mm)") + #makes x axis log scale and named
+  scale_y_log10(name = "Eye diameter (mm)", breaks = c(0.5, 0.7, 1, 1.8)) + #makes y axis log scale and named
+  theme_bw() +
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.text = element_text(face = "italic")) +
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Allosergestes_pectinatus")], xend = limits$max[which(limits$genus_species == "Allosergestes_pectinatus")], y = 10^(log10(limits$min[which(limits$genus_species == "Allosergestes_pectinatus")])*cc_species["Allosergestes_pectinatus", "slope"] + cc_species["Allosergestes_pectinatus", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Allosergestes_pectinatus")])*cc_species["Allosergestes_pectinatus", "slope"] + cc_species["Allosergestes_pectinatus", "elevation"])), color = col_clade["sergestes"]) + #Allosergestes pectinatus adult scaling
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Allosergestes_sargassi")], xend = limits$max[which(limits$genus_species == "Allosergestes_sargassi")], y = 10^(log10(limits$min[which(limits$genus_species == "Allosergestes_sargassi")])*cc_species["Allosergestes_sargassi", "slope"] + cc_species["Allosergestes_sargassi", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Allosergestes_sargassi")])*cc_species["Allosergestes_sargassi", "slope"] + cc_species["Allosergestes_sargassi", "elevation"])), color = col_clade["sergestes"]) + #Allosergestes_sargassi adult scaling
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Challengerosergia_hansjacobi")], xend = limits$max[which(limits$genus_species == "Challengerosergia_hansjacobi")], y = 10^(log10(limits$min[which(limits$genus_species == "Challengerosergia_hansjacobi")])*cc_species["Challengerosergia_hansjacobi", "slope"] + cc_species["Challengerosergia_hansjacobi", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Challengerosergia_hansjacobi")])*cc_species["Challengerosergia_hansjacobi", "slope"] + cc_species["Challengerosergia_hansjacobi", "elevation"])), color = col_clade["sergia"]) + #Challengerosergia_hansjacobi adult scaling
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Challengerosergia_talismani")], xend = limits$max[which(limits$genus_species == "Challengerosergia_talismani")], y = 10^(log10(limits$min[which(limits$genus_species == "Challengerosergia_talismani")])*cc_species["Challengerosergia_talismani", "slope"] + cc_species["Challengerosergia_talismani", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Challengerosergia_talismani")])*cc_species["Challengerosergia_talismani", "slope"] + cc_species["Challengerosergia_talismani", "elevation"])), color = col_clade["sergia"]) + #Challengerosergia_talismani adult scaling
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Deosergestes_corniculum")], xend = limits$max[which(limits$genus_species == "Deosergestes_corniculum")], y = 10^(log10(limits$min[which(limits$genus_species == "Deosergestes_corniculum")])*cc_species["Deosergestes_corniculum", "slope"] + cc_species["Deosergestes_corniculum", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Deosergestes_corniculum")])*cc_species["Deosergestes_corniculum", "slope"] + cc_species["Deosergestes_corniculum", "elevation"])), color = col_clade["sergestes"]) + #Deosergestes_corniculum adult scaling
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Deosergestes_henseni")], xend = limits$max[which(limits$genus_species == "Deosergestes_henseni")], y = 10^(log10(limits$min[which(limits$genus_species == "Deosergestes_henseni")])*cc_species["Deosergestes_henseni", "slope"] + cc_species["Deosergestes_henseni", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Deosergestes_henseni")])*cc_species["Deosergestes_henseni", "slope"] + cc_species["Deosergestes_henseni", "elevation"])), color = col_clade["sergestes"]) + #Deosergestes henseni adult scaling
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Gardinerosergia_splendens")], xend = limits$max[which(limits$genus_species == "Gardinerosergia_splendens")], y = 10^(log10(limits$min[which(limits$genus_species == "Gardinerosergia_splendens")])*cc_species["Gardinerosergia_splendens", "slope"] + cc_species["Gardinerosergia_splendens", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Gardinerosergia_splendens")])*cc_species["Gardinerosergia_splendens", "slope"] + cc_species["Gardinerosergia_splendens", "elevation"])), color = col_clade["sergia"]) + #Gardinerosergia splendens adult scaling
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Parasergestes_armatus")], xend = limits$max[which(limits$genus_species == "Parasergestes_armatus")], y = 10^(log10(limits$min[which(limits$genus_species == "Parasergestes_armatus")])*cc_species["Parasergestes_armatus", "slope"] + cc_species["Parasergestes_armatus", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Parasergestes_armatus")])*cc_species["Parasergestes_armatus", "slope"] + cc_species["Parasergestes_armatus", "elevation"])), color = col_clade["sergestes"]) + #Parasergestes armatus adult scaling
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Parasergestes_vigilax")], xend = limits$max[which(limits$genus_species == "Parasergestes_vigilax")], y = 10^(log10(limits$min[which(limits$genus_species == "Parasergestes_vigilax")])*cc_species["Parasergestes_vigilax", "slope"] + cc_species["Parasergestes_vigilax", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Parasergestes_vigilax")])*cc_species["Parasergestes_vigilax", "slope"] + cc_species["Parasergestes_vigilax", "elevation"])), color = col_clade["sergestes"]) + #Parasergestes vigilax adult scaling
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Phorcosergia_grandis")], xend = limits$max[which(limits$genus_species == "Phorcosergia_grandis")], y = 10^(log10(limits$min[which(limits$genus_species == "Phorcosergia_grandis")])*cc_species["Phorcosergia_grandis", "slope"] + cc_species["Phorcosergia_grandis", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Phorcosergia_grandis")])*cc_species["Phorcosergia_grandis", "slope"] + cc_species["Phorcosergia_grandis", "elevation"])), color = col_clade["sergia"]) + #Phorcosergia grandis adult scaling
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Robustosergia_robusta")], xend = limits$max[which(limits$genus_species == "Robustosergia_robusta")], y = 10^(log10(limits$min[which(limits$genus_species == "Robustosergia_robusta")])*cc_species["Robustosergia_robusta", "slope"] + cc_species["Robustosergia_robusta", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Robustosergia_robusta")])*cc_species["Robustosergia_robusta", "slope"] + cc_species["Robustosergia_robusta", "elevation"])), color = col_clade["sergia"]) + #Robustosergia robusta adult scaling
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Robustosergia_regalis")], xend = limits$max[which(limits$genus_species == "Robustosergia_regalis")], y = 10^(log10(limits$min[which(limits$genus_species == "Robustosergia_regalis")])*cc_species["Robustosergia_regalis", "slope"] + cc_species["Robustosergia_regalis", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Robustosergia_regalis")])*cc_species["Robustosergia_regalis", "slope"] + cc_species["Robustosergia_regalis", "elevation"])), color = col_clade["sergia"]) +
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Sergestes_atlanticus")], xend = limits$max[which(limits$genus_species == "Sergestes_atlanticus")], y = 10^(log10(limits$min[which(limits$genus_species == "Sergestes_atlanticus")])*cc_species["Sergestes_atlanticus", "slope"] + cc_species["Sergestes_atlanticus", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Sergestes_atlanticus")])*cc_species["Sergestes_atlanticus", "slope"] + cc_species["Sergestes_atlanticus", "elevation"])), color = col_clade["sergestes"]) +
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Sergia_tenuiremis")], xend = limits$max[which(limits$genus_species == "Sergia_tenuiremis")], y = 10^(log10(limits$min[which(limits$genus_species == "Sergia_tenuiremis")])*cc_species["Sergia_tenuiremis", "slope"] + cc_species["Sergia_tenuiremis", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Sergia_tenuiremis")])*cc_species["Sergia_tenuiremis", "slope"] + cc_species["Sergia_tenuiremis", "elevation"])), color = col_clade["sergia"]) +
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Eusergestes_arcticus")], xend = limits$max[which(limits$genus_species == "Eusergestes_arcticus")], y = 10^(log10(limits$min[which(limits$genus_species == "Eusergestes_arcticus")])*cc_species["Eusergestes_arcticus", "slope"] + cc_species["Eusergestes_arcticus", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Eusergestes_arcticus")])*cc_species["Eusergestes_arcticus", "slope"] + cc_species["Eusergestes_arcticus", "elevation"])), color = col_clade["sergestes"]) +
+  geom_abline(data = cc_pgls_evo0, aes(intercept = cc_pgls_evo0[1,1], slope = cc_pgls_evo0[2,1]), linetype = "solid") +
+  geom_abline(data = cc_pgls_evo1, aes(intercept = cc_pgls_evo1[1,1], slope = cc_pgls_evo1[2,1]), linetype = "dashed") +
+  geom_point(size = 2, alpha = 1) + 
+  scale_shape_manual(values = shapes.sp, name = "Species") + 
+  scale_color_manual(values = cols.sp, name = "Species") +
+  scale_fill_manual(values = cols.sp, name = "Species")
+
+# Interactive plot
+plot_evo_slope_cols
+
+```
+```{r}
+#with static allom
+pdf("../Figures/Figure2_alt_binary.pdf", width = 7, height = 4)
+plot_evo_slope_cols
+dev.off()
+```
+
+
+
 
 ```{r}
 #export evolutionary allometry figures to pdf
@@ -1581,6 +1760,9 @@ species.phy <- merge(species, pglsres, by = "row.names")
 #make column converted to observed eye size as factor of PGLS fit
 species.phy$eyefactor <- 10^species.phy$pglsres
 
+#make column with factor for pos/neg residuals
+species.phy$sign <- ifelse(species.phy$pglsres<0, "neg","pos")
+
 # Prep phylogeny -----
 
 # Make Genus_species tip labels to replace Binomial codes
@@ -1607,6 +1789,14 @@ names(aveye) <- species.phy$genus_species
 #make trait vector for eye investment (PGLS residuals)
 releye <- as.vector(species.phy$pglsres) #residuals of pgls
 names(releye) <- species.phy$genus_species
+
+#make vector for bar colors (pos/neg residuals)
+col_releye <- c("pos" = "#D3D2D2",
+                "neg" = "#807F7F")
+
+#make trait vector for body size
+body <- as.vector(species.phy$Body_length)
+names(body) <- species.phy$genus_species
 
 # Phylogeny with eye size and investment -------
 
@@ -1752,6 +1942,92 @@ dev.off()
 ```
 
 The above plot shows absolute eye size (purple dots scaled by eye diameter) and the average daytime (orange) and nighttime (blue) depths for each species in the phylogeny, as well as the maximum reported depth (black). Gray bars indicate vertical distance traveled during diel vertical migrations. Note that this plot is missing a scale bar, easier to add in Illustrator, but minimum depth at night (left/blue points) is 133m and maximum depth during the day (right/orange points) is 1750m. The maximum depth of occurrance (black points) across species is 2300m.
+
+## Export components of Figure 3 (phylogeny)
+
+```{r, fig.width=6, fig.height=6}
+
+# Phylogeny with eye size, body size and investment -------
+
+#color palette for sergia and sergestid clades
+col_clade <- c("sergestes" = "#633974",
+                "sergia" = "#A9DFBF")
+
+#add clade to dataset
+species2$clade <- ifelse(species2$photo2=="pesta", "sergestes", "sergia")
+
+#plot tree with eye investment bars
+plotTree.wBars(tree.plot, releye, 
+               scale = 1.5, 
+               tip.labels = TRUE,
+               col = "gray",
+               offset = 1,
+               ftype = "bi",
+               fsize = 0.7)
+
+#add tip labels for body size
+tiplabels(cex = 0.2*body,
+          pch = 1,
+          col = unname(col_clade[species2$clade]),
+          offset = 0)
+
+#add tip labels for absolute eye size
+tiplabels(cex = 1.5*aveye,
+          pch = 19, #shape of labels
+          col = unname(col_clade[species2$clade]),
+          offset = 0)
+
+#add legend for clade
+legend(x = "bottomleft", legend = c("Sergestid group", "Sergia group"), pch = 22, pt.cex= 2, pt.bg = col_clade, cex = 1, bty = "n", horiz = F)
+```
+
+```{r}
+#Export figure------
+pdf("../Figures/phylo-eyesize.pdf", width = 4.5, height = 7)
+
+#plot tree with eye investment bars
+plotTree.wBars(tree.plot, releye, 
+               scale = 1, 
+               tip.labels = TRUE,
+               col = "transparent",
+               border = "transparent",
+               offset = 2.9,
+               ftype = "bi",
+               fsize = 0.7)
+
+#add tip labels for body size
+tiplabels(cex = 0.09*body,
+          pch = 1,
+          col = unname(col_clade[species2$clade]),
+          offset = 0.15)
+
+#add tip labels for absolute eye size
+tiplabels(cex = 1.2*aveye,
+          pch = 19, #shape of labels
+          col = unname(col_clade[species2$clade]),
+          offset = 0.15)
+
+#add legend for clade
+legend(x = "bottomleft", legend = c("Sergestid group", "Sergia group"), pch = 22, pt.cex= 1.8, pt.bg = col_clade, cex = 0.7, bty = "n", horiz = F)
+
+dev.off()
+```
+
+```{r}
+#Export figure------
+pdf("../Figures/phylo-bars.pdf", width = 4.5, height = 7)
+
+#plot tree with eye investment bars
+plotTree.wBars(tree.plot, releye, 
+               scale = 3.8, 
+               tip.labels = FALSE,
+               col = unname(col_releye[species.phy$sign]),
+               ftype = "bi",
+               fsize = 0.7)
+
+dev.off()
+```
+
 
 
 ## Photophore complexity
@@ -2063,13 +2339,19 @@ legend(x = "bottomleft", legend = c("pesta", "lensed", "unlensed", "none"), pch 
 dev.off()
 ```
 
-
 ```{r photo-viz2}
 
+#shapes for photophore groups
 sh_photo2 <- c("lensed" = 17, 
                 "none" = 18,
                 "pesta" = 19,
                 "unlensed" = 15)
+
+#color palette for photophore groups
+col_photo2 <- c("pesta" = "#633974",
+                "lensed" = "#27AE60",
+                "unlensed" = "#A9DFBF",
+                "none" = "#A6ACAF")
 
 #Boxplots for absolute eye size across photophores -----
 plot_abs_photo2 <- ggplot(data = species2, aes(x = factor(photo2, levels=c("pesta", "nonpesta","none")), y = eye_av)) + 
@@ -2081,6 +2363,7 @@ plot_abs_photo2 <- ggplot(data = species2, aes(x = factor(photo2, levels=c("pest
                      breaks = c("pesta", "lensed", "unlensed", "none")) +
   scale_shape_manual(values = sh_photo2, name = "Photophore type", 
                      breaks = c("pesta", "lensed", "unlensed", "none")) +
+  scale_x_discrete(breaks=c("pesta", "nonpesta","none"), labels=c("pesta", "photophores","none"))+
   xlab("Photophore complexity") +
   ylab("Eye diameter (mm)") +
   ggtitle("Absolute eye size")
@@ -2097,6 +2380,7 @@ plot_rel_photo2 <- ggplot(data = species2, aes(x = factor(photo2, levels=c("pest
                      breaks = c("pesta", "lensed", "unlensed", "none")) +
   scale_shape_manual(values = sh_photo2, name = "Photophore type", 
                      breaks = c("pesta", "lensed", "unlensed", "none")) +
+  scale_x_discrete(breaks=c("pesta", "nonpesta","none"), labels=c("pesta", "photophores","none"))+
   xlab("Photophore complexity") +
   ylab("Relative eye size (eye/body)") +
   ggtitle("Relative eye size")
@@ -2113,6 +2397,7 @@ plot_inv_photo2 <- ggplot(data = species2, aes(x = factor(photo2, levels=c("pest
                      breaks = c("pesta", "lensed", "unlensed", "none")) +
   scale_shape_manual(values = sh_photo2, name = "Photophore type", 
                      breaks = c("pesta", "lensed", "unlensed", "none")) +
+  scale_x_discrete(breaks=c("pesta", "nonpesta","none"), labels=c("pesta", "photophores","none"))+
   xlab("Photophore complexity") +
   ylab("Eye ~ body residuals") +
   ggtitle("Residual eye investment")
@@ -2139,7 +2424,7 @@ leg <- get_legend(fig.a + theme(legend.position="right"))
 
 
 #export figure
-pdf("../Figures/boxplots-photo.pdf", width = 10, height = 4)
+pdf("../Figures/boxplots-photo.pdf", width = 12, height = 4)
 plot_grid(plots, leg, nrow = 1, rel_widths = c(1, .2))
 dev.off()
 
@@ -2380,6 +2665,310 @@ ggplotly(plot_daymax)
 ```
 
 Visual inspection of the data shows that absolute eye size, body size, and relative eye size maybe could seem to increase with daytime depth, but if so it's only driven by a couple of data points. Nighttime depth doesn't vary much across species, but to me it looks like the species with larger body sizes might also have the larger differences between nighttime and daytime depths. Maximum reported depth shows a similar pattern to daytime depth. We next test this in an evolutionary framework.
+
+## Extra regressions testing hypotheses about changes above/below 1000m during the day and above/below 200m at night.
+
+### Absolute eye size vs. mean daytime depth x zone
+
+```{r}
+#does scaling absolute eye size with depth change above/below 1000m
+
+#lambda = 0 (eye ~ day depth * depth bin)
+pgls_eyedaydepth0 <- pgls(eye_av ~ Day_Avg * daybin,
+               data = species.comp, 
+               lambda = 0.00001, #set lambda to 0
+               bounds=list(lambda=c(0.00001,0.00001)),
+               param.CI = 0.95)
+
+#check model assumptions
+par(mar = c(4,4,2,2))
+par(mfrow = c(2, 2))
+plot(pgls_eyedaydepth0)
+par(mfrow = c(1, 1))
+
+#main effects
+anova(pgls_eyedaydepth0)
+
+#coefficients and contrasts
+summary(pgls_eyedaydepth0)
+
+#plot regressions
+plot(eye_av ~ Day_Avg, data=species)
+abline(pgls_eyedaydepth0)
+
+#save model coefficients
+cc_eyedaydepth0 <- as.data.frame(coefficients(pgls_eyedaydepth0))
+
+########
+
+#lambda = 1 (eye ~ day depth * depth bin)
+pgls_eyedaydepth1 <- pgls(eye_av ~ Day_Avg * daybin,
+               data = species.comp, 
+               lambda = 1, #set lambda to 1
+               param.CI = 0.95)
+
+#check model assumptions
+par(mar = c(4,4,2,2))
+par(mfrow = c(2, 2))
+plot(pgls_eyedaydepth1)
+par(mfrow = c(1, 1))
+
+#main effects
+anova(pgls_eyedaydepth1)
+
+#coefficients and contrasts
+summary(pgls_eyedaydepth1)
+
+#save model coefficients
+cc_eyedaydepth1 <- as.data.frame(coefficients(pgls_eyedaydepth1))
+```
+
+### Body lengths vs. mean daytime depth x zone
+
+```{r}
+#does scaling of body size with depth change above/below 1000m
+
+#lambda = 0 (body ~ day depth * depth bin)
+pgls_bodydaydepth0 <- pgls(length_av ~ Day_Avg * daybin,
+               data = species.comp, 
+               lambda = 0.00001, #set lambda to 0
+               bounds=list(lambda=c(0.00001,0.00001)),
+               param.CI = 0.95)
+
+#check model assumptions
+par(mar = c(4,4,2,2))
+par(mfrow = c(2, 2))
+plot(pgls_bodydaydepth0)
+par(mfrow = c(1, 1))
+
+#main effects
+anova(pgls_bodydaydepth0)
+
+#coefficients and contrasts
+summary(pgls_bodydaydepth0)
+
+#save model coefficients
+cc_bodydaydepth0 <- as.data.frame(coefficients(pgls_bodydaydepth0))
+
+#lambda = 1 (body ~ day depth * depth bin)
+pgls_bodydaydepth1 <- pgls(length_av ~ Day_Avg * daybin,
+               data = species.comp, 
+               lambda = 1, #set lambda to 1
+               param.CI = 0.95)
+
+#check model assumptions
+par(mar = c(4,4,2,2))
+par(mfrow = c(2, 2))
+plot(pgls_bodydaydepth1)
+par(mfrow = c(1, 1))
+
+#main effects
+anova(pgls_bodydaydepth1)
+
+#coefficients and contrasts
+summary(pgls_bodydaydepth1)
+
+#save model coefficients
+cc_bodydaydepth1 <- as.data.frame(coefficients(pgls_bodydaydepth1))
+```
+
+### Eye size vs. mean nighttime depth x zone THROWING ERROR- START HERE
+
+```{r}
+#does scaling of eye size with nighttime depth change above/below 200m
+
+#lambda = 0 (eye ~ night depth * depth bin)
+pgls_eyenightdepth0 <- pgls(eye_av ~ Night_Avg * nightbin,
+               data = species.comp, 
+               lambda = 1, #set lambda to 0
+               bounds=list(lambda=c(0.5,0.5)),
+               param.CI = 0.95)
+
+#check model assumptions
+par(mar = c(4,4,2,2))
+par(mfrow = c(2, 2))
+plot(pgls_bodydaydepth0)
+par(mfrow = c(1, 1))
+
+#main effects
+anova(pgls_bodydaydepth0)
+
+#coefficients and contrasts
+summary(pgls_bodydaydepth0)
+
+#save model coefficients
+cc_bodydaydepth0 <- as.data.frame(coefficients(pgls_bodydaydepth0))
+
+#lambda = 1 (body ~ day depth * depth bin)
+pgls_bodydaydepth1 <- pgls(length_av ~ Day_Avg * daybin,
+               data = species.comp, 
+               lambda = 1, #set lambda to 1
+               param.CI = 0.95)
+
+#check model assumptions
+par(mar = c(4,4,2,2))
+par(mfrow = c(2, 2))
+plot(pgls_bodydaydepth1)
+par(mfrow = c(1, 1))
+
+#main effects
+anova(pgls_bodydaydepth1)
+
+#coefficients and contrasts
+summary(pgls_bodydaydepth1)
+
+#save model coefficients
+cc_bodydaydepth1 <- as.data.frame(coefficients(pgls_bodydaydepth1))
+```
+
+### Visualize these (Figure 5)
+
+```{r, fig.height=1.5, fig.width=3}
+
+#sets x limits by daytime depth bin for plots
+limits_daybin <- species %>%
+  group_by(daybin) %>%
+  summarise(max = max(Day_Avg, na.rm = TRUE),
+            min = min(Day_Avg, na.rm = TRUE))
+
+#eye ~ day depth
+plot_eye_day <- ggplot(species, aes(y = eye_av, x = Day_Avg, color =  species_text, shape = species_text, fill = species_text)) + 
+  geom_point(size = 2, alpha = 1) + 
+  scale_shape_manual(values = shapes.sp, name = "Species") + 
+  scale_color_manual(values = cols.sp, name = "Species") +
+  scale_fill_manual(values = cols.sp, name = "Species") +
+  ylab("Eye diameter (mm)") + 
+  xlab("Daytime depth (m)") + 
+  theme_bw() +
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.text = element_text(face = "italic")) +
+  geom_vline(xintercept = 1000, linetype = "dotted") +
+  #regression for day depth < 1000m (lambda = 0)
+  geom_segment(aes(x = limits_daybin$min[which(limits_daybin$daybin == "less")], 
+                   xend = limits_daybin$max[which(limits_daybin$daybin == "less")],
+                   y = limits_daybin$min[which(limits_daybin$daybin == "less")]*cc_eyedaydepth0[2,1] + cc_eyedaydepth0[1,1],
+                   yend = limits_daybin$max[which(limits_daybin$daybin == "less")]*cc_eyedaydepth0[2,1] + cc_eyedaydepth0[1,1]), linetype = "solid", color = "black") + 
+  #regression for day depth > 1000m (lambda = 0)
+   geom_segment(aes(x = limits_daybin$min[which(limits_daybin$daybin == "more")], 
+                   xend = limits_daybin$max[which(limits_daybin$daybin == "more")],
+                   y = limits_daybin$min[which(limits_daybin$daybin == "more")]*(cc_eyedaydepth0[2,1] + cc_eyedaydepth0[4,1]) + (cc_eyedaydepth0[1,1] + cc_eyedaydepth0[3,1]),
+                   yend = limits_daybin$max[which(limits_daybin$daybin == "more")]*(cc_eyedaydepth0[2,1] + cc_eyedaydepth0[4,1]) + (cc_eyedaydepth0[1,1] + cc_eyedaydepth0[3,1])), linetype = "solid", color = "black") +
+  #regression for day depth < 1000m (lambda = 1)
+  geom_segment(aes(x = limits_daybin$min[which(limits_daybin$daybin == "less")], 
+                   xend = limits_daybin$max[which(limits_daybin$daybin == "less")],
+                   y = limits_daybin$min[which(limits_daybin$daybin == "less")]*cc_eyedaydepth1[2,1] + cc_eyedaydepth1[1,1],
+                   yend = limits_daybin$max[which(limits_daybin$daybin == "less")]*cc_eyedaydepth1[2,1] + cc_eyedaydepth1[1,1]), linetype = "dashed", color = "black") + 
+  #regression for day depth > 1000m (lambda = 1)
+   geom_segment(aes(x = limits_daybin$min[which(limits_daybin$daybin == "more")], 
+                   xend = limits_daybin$max[which(limits_daybin$daybin == "more")],
+                   y = limits_daybin$min[which(limits_daybin$daybin == "more")]*(cc_eyedaydepth1[2,1] + cc_eyedaydepth1[4,1]) + (cc_eyedaydepth1[1,1] + cc_eyedaydepth1[3,1]),
+                   yend = limits_daybin$max[which(limits_daybin$daybin == "more")]*(cc_eyedaydepth1[2,1] + cc_eyedaydepth1[4,1]) + (cc_eyedaydepth1[1,1] + cc_eyedaydepth1[3,1])), linetype = "dashed", color = "black")
+  
+plot_eye_day
+
+#body ~ day depth
+plot_body_day <- ggplot(species, aes(y = Body_length, x = Day_Avg, color =  species_text, shape = species_text, fill = species_text)) + 
+  geom_point(size = 2, alpha = 1) + 
+  scale_shape_manual(values = shapes.sp, name = "Species") + 
+  scale_color_manual(values = cols.sp, name = "Species") +
+  scale_fill_manual(values = cols.sp, name = "Species") +
+  ylab("Body length (mm)") + 
+  xlab("Daytime depth (m)") + 
+  theme_bw() +
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.text = element_text(face = "italic")) +
+  geom_vline(xintercept = 1000, linetype = "dotted") +
+  #regression for day depth < 1000m (lambda = 1)
+  geom_segment(aes(x = limits_daybin$min[which(limits_daybin$daybin == "less")], 
+                   xend = limits_daybin$max[which(limits_daybin$daybin == "less")],
+                   y = limits_daybin$min[which(limits_daybin$daybin == "less")]*cc_bodydaydepth1[2,1] + cc_bodydaydepth1[1,1],
+                   yend = limits_daybin$max[which(limits_daybin$daybin == "less")]*cc_bodydaydepth1[2,1] + cc_bodydaydepth1[1,1]), linetype = "dashed", color = "black") + 
+  #regression for day depth > 1000m (lambda = 1)
+   geom_segment(aes(x = limits_daybin$min[which(limits_daybin$daybin == "more")], 
+                   xend = limits_daybin$max[which(limits_daybin$daybin == "more")],
+                   y = limits_daybin$min[which(limits_daybin$daybin == "more")]*(cc_bodydaydepth1[2,1] + cc_bodydaydepth1[4,1]) + (cc_bodydaydepth1[1,1] + cc_bodydaydepth1[3,1]),
+                   yend = limits_daybin$max[which(limits_daybin$daybin == "more")]*(cc_bodydaydepth1[2,1] + cc_bodydaydepth1[4,1]) + (cc_bodydaydepth1[1,1] + cc_bodydaydepth1[3,1])), linetype = "dashed", color = "black") +
+  #regression for day depth < 1000m (lambda = 0)
+  geom_segment(aes(x = limits_daybin$min[which(limits_daybin$daybin == "less")], 
+                   xend = limits_daybin$max[which(limits_daybin$daybin == "less")],
+                   y = limits_daybin$min[which(limits_daybin$daybin == "less")]*cc_bodydaydepth0[2,1] + cc_bodydaydepth0[1,1],
+                   yend = limits_daybin$max[which(limits_daybin$daybin == "less")]*cc_bodydaydepth0[2,1] + cc_bodydaydepth0[1,1]), linetype = "solid", color = "black") + 
+  #regression for day depth > 1000m (lambda = 0)
+   geom_segment(aes(x = limits_daybin$min[which(limits_daybin$daybin == "more")], 
+                   xend = limits_daybin$max[which(limits_daybin$daybin == "more")],
+                   y = limits_daybin$min[which(limits_daybin$daybin == "more")]*(cc_bodydaydepth0[2,1] + cc_bodydaydepth0[4,1]) + (cc_bodydaydepth0[1,1] + cc_bodydaydepth0[3,1]),
+                   yend = limits_daybin$max[which(limits_daybin$daybin == "more")]*(cc_bodydaydepth0[2,1] + cc_bodydaydepth0[4,1]) + (cc_bodydaydepth0[1,1] + cc_bodydaydepth0[3,1])), linetype = "solid", color = "black")
+
+plot_body_day
+
+#rel eye ~ day depth
+plot_releye_day <- ggplot(species, aes(y = eye_av/Body_length, x = Day_Avg, color =  species_text, shape = species_text, fill = species_text)) + 
+  geom_point(size = 2, alpha = 1) + 
+  scale_shape_manual(values = shapes.sp, name = "Species") + 
+  scale_color_manual(values = cols.sp, name = "Species") +
+  scale_fill_manual(values = cols.sp, name = "Species") +
+  ylab("Relative eye size (eye/body)") + 
+  xlab("Daytime depth (m)") + 
+  theme_bw() +
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.text = element_text(face = "italic")) +
+  geom_vline(xintercept = 1000, linetype = "dashed")
+  # geom_abline(data = cc_pgls_evo0, aes(intercept = cc_pgls_evo0[1,1], slope = cc_pgls_evo0[2,1]), linetype = "solid") +
+  # geom_abline(data = cc_pgls_evo1, aes(intercept = cc_pgls_evo1[1,1], slope = cc_pgls_evo1[2,1]), linetype = "dashed")
+
+plot_releye_day
+
+
+#eye ~ night depth
+plot_eye_night <- ggplot(species, aes(y = eye_av, x = Night_Avg, color =  species_text, shape = species_text, fill = species_text)) + 
+  geom_point(size = 2, alpha = 1) + 
+  scale_shape_manual(values = shapes.sp, name = "Species") + 
+  scale_color_manual(values = cols.sp, name = "Species") +
+  scale_fill_manual(values = cols.sp, name = "Species") +
+  ylab("Eye diameter (mm)") + 
+  xlab("Nighttime depth (m)") + 
+  theme_bw() +
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.text = element_text(face = "italic"))+
+  geom_vline(xintercept = 200, linetype = "dashed")
+  # geom_abline(data = cc_pgls_evo0, aes(intercept = cc_pgls_evo0[1,1], slope = cc_pgls_evo0[2,1]), linetype = "solid") +
+  # geom_abline(data = cc_pgls_evo1, aes(intercept = cc_pgls_evo1[1,1], slope = cc_pgls_evo1[2,1]), linetype = "dashed")
+
+plot_eye_night
+
+#eye ~ night colored by day bins
+plot_eye_night2 <- ggplot(species, aes(y = eye_av, x = Night_Avg, color =  daybin)) + 
+  geom_point(size = 2, alpha = 1) + 
+  ylab("Eye diameter (mm)") + 
+  xlab("Nighttime depth (m)") + 
+  theme_bw() +
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.text = element_text(face = "italic"))
+
+plot_eye_night2
+
+```
+
+```{r}
+#export figure
+#name panels
+fig.a <- plot_eye_day + theme(legend.position = "none") 
+fig.b <- plot_body_day + theme(legend.position = "none") 
+fig.c <- plot_eye_night + theme(legend.position = "none") 
+
+#arrange plots in panels
+plots <- plot_grid(fig.a, fig.b, fig.c, #list of plots to arrange in grid
+           align = 'vh', #align horizontally and vertically
+           axis = 'lb',
+           labels = c("A", "B", "C"), #panel labels for figure
+           hjust = -1, #adjustment for panel labels
+           nrow = 3) #number of rows in grids
+
+# extract legend from Rana temporaria figure
+leg <- get_legend(fig.a + theme(legend.position="right"))
+
+#export figure
+pdf("../Figures/Figure5.pdf", width = 6, height = 9)
+plot_grid(plots, leg, ncol = 2, rel_widths = c(1, .5))
+dev.off()
+
+```
+
 
 ## Mean depths
 
@@ -3124,4 +3713,145 @@ summary(pgls_eco1)
 When lambda = 1, habitat has no effect on relative eye size. 
 
 Habitat (benthopelagic/pelagic) does not have a significant effect on relative eye size when lambda is set to 0 or 1. Thus, our finding is robust whatever the true value of lambda is. However, note that we only had n = 3 benthopelagic species in our dataset. 
+
+
+# Modeling of sighting distance for bioluminescent point source
+
+```{r}
+#import modeling results
+modeling <- data.frame(read.csv("../Data/modeling.csv", header=TRUE, na.strings=c("", "NA", " ", stringsAsFactors = FALSE)))
+```
+
+```{r}
+
+#reorder factor levels for figure legend (phylo order)
+modeling$species <- factor(modeling$species, 
+                                      levels = c("Deosergestes corniculum",
+                                                 "Deosergestes henseni",
+                                                 "Allosergestes pectinatus",
+                                                 "Allosergestes sargassi",
+                                                 "Sergestes atlanticus",
+                                                 "Neosergestes edwardsii",
+                                                 "Parasergestes vigilax",
+                                                 "Parasergestes armatus",
+                                                 "Eusergestes arcticus",
+                                                 "Gardinerosergia splendens",
+                                                 "Robustosergia regalis",
+                                                 "Robustosergia robusta",
+                                                 "Phorcosergia grandis",
+                                                 "Sergia tenuiremis",
+                                                 "Challengerosergia talismani",
+                                                 "Challengerosergia hansjacobi"))
+
+#make shape palette
+shapes.sp <- c("Deosergestes corniculum" = 21,
+              "Deosergestes henseni" = 22, 
+              "Allosergestes pectinatus" = 23, 
+              "Allosergestes sargassi" = 24,
+              "Sergestes atlanticus" = 25, 
+              "Neosergestes edwardsii"= 23,
+              "Parasergestes vigilax" = 21, 
+              "Parasergestes armatus" = 22,
+              "Eusergestes arcticus" = 23, 
+              "Gardinerosergia splendens" = 24, 
+              "Robustosergia regalis" = 25, 
+              "Robustosergia robusta" = 21, 
+              "Phorcosergia grandis" = 22,
+              "Sergia tenuiremis" = 23,
+              "Challengerosergia talismani" = 24,
+              "Challengerosergia hansjacobi" = 25)
+
+#sergia/sergestes green purple pallette
+cols.sp <- c(#Sergestes group
+              "Deosergestes corniculum" = "#512E5F",
+              "Deosergestes henseni" = "#633974",
+              "Allosergestes pectinatus" = "#76448A",
+              "Allosergestes sargassi" = "#884EA0",
+              "Sergestes atlanticus" = "#9B59B6",
+              "Neosergestes edwardsii" = "#AF7AC5",
+              "Parasergestes vigilax" = "#C39BD3",
+              "Parasergestes armatus" = "#D7BDE2",
+              "Eusergestes arcticus" = "#EBDEF0",
+             #Sergia group
+              "Gardinerosergia splendens" = "#ABEBC6",
+              "Robustosergia regalis" = "#A9DFBF",
+              "Robustosergia robusta" = "#52BE80",
+              "Phorcosergia grandis" = "#27AE60",
+              "Sergia tenuiremis" = "#1E8449",
+              "Challengerosergia talismani" = "#196F3D",
+              "Challengerosergia hansjacobi" = "#145A32")
+```
+
+## Absolute sighting distance
+
+```{r}
+# OLS regression of absolute sighting distance v. body length
+ols_abs <- lm(abs_sight_m ~ body_mm, data = modeling)
+cc_olsabs <- as.data.frame(coefficients(ols_abs))
+
+# Make plot for absolute sighting distances
+plot_model_abs <- ggplot(modeling, aes(x = body_mm, y = abs_sight_m, color =  species, shape = species, fill = species)) + 
+  geom_point(size = 2, alpha = 1) + 
+  scale_shape_manual(values = shapes.sp, name = "Species") + 
+  scale_color_manual(values = cols.sp, name = "Species") +
+  scale_fill_manual(values = cols.sp, name = "Species") +
+  xlab("Body length (mm)") + 
+  ylab("Sighting distance (m)") + 
+  xlim(c(0,60)) +
+  ylim(c(0,4)) +
+  theme_bw() +
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.text = element_text(face = "italic")) +
+   geom_abline(data = cc_olsabs, aes(intercept = cc_olsabs[1,1], slope = cc_olsabs[2,1]), linetype = "dashed")
+
+# Interactive plot
+ggplotly(plot_model_abs)
+
+```
+
+## Sighting distance relative to body length
+
+```{r}
+# OLS regression of relative sighting distance v. body length
+ols_rel <- lm(rel_sight ~ body_mm, data = modeling)
+cc_olsrel <- as.data.frame(coefficients(ols_rel))
+
+# Make plot for relative sighting distances
+plot_model_rel <- ggplot(modeling, aes(x = body_mm, y = rel_sight, color =  species, shape = species, fill = species)) + 
+  geom_point(size = 2, alpha = 1) + 
+  scale_shape_manual(values = shapes.sp, name = "Species") + 
+  scale_color_manual(values = cols.sp, name = "Species") +
+  scale_fill_manual(values = cols.sp, name = "Species") +
+  xlab("Body length (mm)") + 
+  ylab("Relative sighting distance") + 
+  xlim(c(0,60)) +
+  ylim(c(0,90)) +
+  theme_bw() +
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.text = element_text(face = "italic")) +
+   geom_abline(data = cc_olsrel, aes(intercept = cc_olsrel[1,1], slope = cc_olsrel[2,1]), linetype = "dashed")
+
+# Interactive plot
+ggplotly(plot_model_rel)
+```
+```{r}
+
+#name panels
+fig.a <- plot_model_abs + theme(legend.position = "none") 
+fig.b <- plot_model_rel + theme(legend.position = "none") 
+
+#arrange plots in panels
+plots <- plot_grid(fig.a, fig.b,
+           align = 'vh', 
+           axis = 'lb',
+           labels = c("A", "B"), #panel labels for figure
+           hjust = -1, #adjustment for panel labels
+           nrow = 1) #number of rows in grids
+
+# extract legend from Rana temporaria figure
+leg <- get_legend(fig.a + theme(legend.position="right"))
+
+#export figure
+pdf("../Figures/Figure6.pdf", width = 12, height = 4.5)
+plot_grid(plots, leg, ncol = 2, rel_widths = c(1, .3))
+dev.off()
+```
 
