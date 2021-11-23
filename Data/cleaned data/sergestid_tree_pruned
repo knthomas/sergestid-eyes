@@ -1,0 +1,45 @@
+#NEXUS
+[R-package APE, Tue Nov 23 12:13:03 2021]
+
+BEGIN TAXA;
+	DIMENSIONS NTAX = 16;
+	TAXLABELS
+		Deosergestes_henseni
+		Deosergestes_corniculum
+		Allosergestes_sargassi
+		Allosergestes_pectinatus
+		Sergestes_atlanticus
+		Neosergestes_edwardsii
+		Parasergestes_armatus
+		Parasergestes_vigilax
+		Eusergestes_arcticus
+		Gardinerosergia_splendens
+		Robustosergia_regalis
+		Robustosergia_robusta
+		Challengerosergia_hansjacobi
+		Challengerosergia_talismani
+		Sergia_tenuiremis
+		Phorcosergia_grandis
+	;
+END;
+BEGIN TREES;
+	TRANSLATE
+		1	Deosergestes_henseni,
+		2	Deosergestes_corniculum,
+		3	Allosergestes_sargassi,
+		4	Allosergestes_pectinatus,
+		5	Sergestes_atlanticus,
+		6	Neosergestes_edwardsii,
+		7	Parasergestes_armatus,
+		8	Parasergestes_vigilax,
+		9	Eusergestes_arcticus,
+		10	Gardinerosergia_splendens,
+		11	Robustosergia_regalis,
+		12	Robustosergia_robusta,
+		13	Challengerosergia_hansjacobi,
+		14	Challengerosergia_talismani,
+		15	Sergia_tenuiremis,
+		16	Phorcosergia_grandis
+	;
+	TREE * UNTITLED = [&R] (((((((((13:0.3000497625,14:0.3000497625):0.2559499065,(15:0.453426985,16:0.453426985):0.102572684):0.06450642112,12:0.6205060902):0.04830138699,11:0.6688074772):0.05103653,10:0.7198440072):0.134363173,9:0.8542071802):0.05024276496,(((7:0.4406249942,8:0.4406249942):0.1050582758,6:0.54568327):0.2546277357,5:0.8003110057):0.1041389395):0.03291047555,(3:0.8156166986,4:0.8156166986):0.1217437221):0.06263957932,(1:0.8413455851,2:0.8413455851):0.1586544149);
+END;
