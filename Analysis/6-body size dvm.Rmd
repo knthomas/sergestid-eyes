@@ -1,0 +1,222 @@
+---
+title: "Body size vs. DVM distance"
+author: "Katie Thomas"
+date: "12/20/2021"
+output:
+  html_document:
+    keep_md: true
+    code_fold: hide
+    theme: flatly
+    toc: yes
+    toc_float: yes
+  pdf_document:
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+
+#set rmarkdown options
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.height = 5, fig.width = 8, attr.output='style="max-height: 300px;"') 
+
+#load libraries
+library(cowplot)
+library(plyr)
+library(knitr)
+library(kableExtra)
+library(gridExtra)
+library(evobiR)
+library(geiger)
+library(phylotools)
+library(ape)
+library(caper)
+library(phytools)
+library(smatr)
+library(lme4)
+library(tidyverse)
+library(plotly)
+```
+
+# Import data
+
+```{r}
+#import specimen data with outliers removed
+specimens_ed <- data.frame(read.csv("../Data/cleaned data/specimen_data_tidy_no-outliers.csv", header=TRUE))
+
+#import species trait data
+traits <- data.frame(read.csv("../Data/cleaned data/trait_data_tidy.csv", header=TRUE))
+
+#import phylogeny
+tree <- read.nexus("../Data/cleaned data/sergestid_tree_pruned")
+```
+
+# Prep for model
+
+```{r evo-pgls, results = "hide"}
+
+# Prep data ------
+
+#Calculate species means (3 outliers removed)
+sp_means <- specimens_ed %>% 
+  mutate_if(is.character, as.factor) %>% 
+  group_by(genus_species) %>%
+  summarise(eye_av = mean(Eye_Diameter), 
+            length_av = mean(Body_Length), 
+            n = n()) %>%
+  ungroup()
+
+#Merge with species trait data stored in dataframe 'species'
+species <- traits %>%
+  left_join(sp_means, by = "genus_species") %>%
+  mutate(Organ = factor(Organ, levels = c("pesta","lensed", "unlensed", "none"))) %>%
+  mutate(species_text = as.factor(str_replace(genus_species, "_", " "))) # Add labels for species text 
+
+#check that names match in dataframe and tree
+name.check(phy = tree, data = species, data.names = species$genus_species)
+  
+#use caper function to combine phylogeny and data into one object (this function also matches species names in tree and dataset)
+species.comp <- comparative.data(data = species, phy = tree, names.col = "genus_species", vcv = TRUE, na.omit = FALSE, warn.dropped = TRUE)
+
+#check for dropped tips or dropped species
+species.comp$dropped$tips #phylogeny
+species.comp$dropped$unmatched.rows #dataset
+```
+
+
+# Body length vs. vertical migration distance
+
+Here, we fit PGLS models of body length ~ migration distance, with separate models for lambda = 0 and lambda = 1. 
+
+## model with lambda = 0
+
+```{r lambda0-depthrange-abs}
+
+#fit model for eye diameter ~ body length (lambda = 0)
+pgls_bodyrange0 <- pgls(length_av ~ Range,
+               data = species.comp, 
+               lambda = 0.00001, #set lambda to 0
+               bounds=list(lambda=c(0.00001,0.00001)),
+               param.CI = 0.95)
+
+#check model assumptions
+par(mar = c(4,4,2,2))
+par(mfrow = c(2, 2))
+plot(pgls_bodyrange0)
+par(mfrow = c(1, 1))
+
+#main effects
+anova(pgls_bodyrange0)
+
+#parameter estimates
+summary(pgls_bodyrange0)
+```
+
+When lambda = 0, body size is not correlated with the distance of vertical migration.
+
+## model with lambda = 1
+
+```{r lambda1-depthrange-abs}
+
+#fit model for eye diameter ~ body length (lambda = 1)
+pgls_bodyrange1 <- pgls(length_av ~ Range,
+               data = species.comp, 
+               lambda = 1, #set lambda to 1
+               bounds=list(lambda=c(1,1)),
+               param.CI = 0.95)
+
+#check model assumptions
+par(mar = c(4,4,2,2))
+par(mfrow = c(2, 2))
+plot(pgls_bodyrange1)
+par(mfrow = c(1, 1))
+
+#main effects
+anova(pgls_bodyrange1)
+
+#parameter estimates
+summary(pgls_bodyrange1)
+```
+
+When lambda = 1, body size is not correlated with the distance traversed in vertical migration. 
+
+Both models agree that body size and vertical migraiton distance are not significantly correlated in this sample of sergestid shrimps.
+
+# Visualize data
+
+Here, we plot body size vs. vertical migration distance.
+
+
+```{r}
+
+#Give species unique color/shape combinations, with color groups coordinated to phylogenetic subgroups
+
+#reorder factor levels for figure legend (phylo order)
+species$species_text <- factor(species$species_text, 
+                                      levels = c("Deosergestes corniculum",
+                                                 "Deosergestes henseni",
+                                                 "Allosergestes pectinatus",
+                                                 "Allosergestes sargassi",
+                                                 "Sergestes atlanticus",
+                                                 "Neosergestes edwardsii",
+                                                 "Parasergestes vigilax",
+                                                 "Parasergestes armatus",
+                                                 "Eusergestes arcticus",
+                                                 "Gardinerosergia splendens",
+                                                 "Robustosergia regalis",
+                                                 "Robustosergia robusta",
+                                                 "Phorcosergia grandis",
+                                                 "Sergia tenuiremis",
+                                                 "Challengerosergia talismani",
+                                                 "Challengerosergia hansjacobi"))
+
+#make shape pallette
+shapes.sp <- c("Deosergestes corniculum" = 21,
+              "Deosergestes henseni" = 22, 
+              "Allosergestes pectinatus" = 23, 
+              "Allosergestes sargassi" = 24,
+              "Sergestes atlanticus" = 25, 
+              "Neosergestes edwardsii"= 23,
+              "Parasergestes vigilax" = 21, 
+              "Parasergestes armatus" = 22,
+              "Eusergestes arcticus" = 23, 
+              "Gardinerosergia splendens" = 24, 
+              "Robustosergia regalis" = 25, 
+              "Robustosergia robusta" = 21, 
+              "Phorcosergia grandis" = 22,
+              "Sergia tenuiremis" = 23,
+              "Challengerosergia talismani" = 24,
+               "Challengerosergia hansjacobi" = 25)
+ 
+#sergia/sergestes green purple pallette
+cols.sp <- c(#Sergestes group
+              "Deosergestes corniculum" = "#512E5F",
+              "Deosergestes henseni" = "#633974",
+              "Allosergestes pectinatus" = "#76448A",
+              "Allosergestes sargassi" = "#884EA0",
+              "Sergestes atlanticus" = "#9B59B6",
+              "Neosergestes edwardsii" = "#AF7AC5",
+              "Parasergestes vigilax" = "#C39BD3",
+              "Parasergestes armatus" = "#D7BDE2",
+              "Eusergestes arcticus" = "#EBDEF0",
+             #Sergia group
+              "Gardinerosergia splendens" = "#ABEBC6",
+              "Robustosergia regalis" = "#A9DFBF",
+              "Robustosergia robusta" = "#52BE80",
+              "Phorcosergia grandis" = "#27AE60",
+              "Sergia tenuiremis" = "#1E8449",
+              "Challengerosergia talismani" = "#196F3D",
+              "Challengerosergia hansjacobi" = "#145A32")
+
+# Make plot 
+plot_bodyDVM <- ggplot(species, aes(x = Range, y = Body_length, color =  species_text, shape = species_text, fill = species_text)) + 
+  geom_point(size = 2, alpha = 1) + 
+  scale_shape_manual(values = shapes.sp, name = "Species") + 
+  scale_color_manual(values = cols.sp, name = "Species") +
+  scale_fill_manual(values = cols.sp, name = "Species") +
+  ylab("Body length (mm)") +
+  xlab("Distance of DVM (m)") +
+  theme_bw() +
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.text = element_text(face = "italic")) 
+
+ggplotly(plot_bodyDVM)
+```
+
