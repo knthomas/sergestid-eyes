@@ -992,7 +992,7 @@ confint(lme_withpres, level = 0.95)
 
 ### Compare models
 
-Then we can compare the two models via AIC and log likelihood. 
+Then we can compare the two models via AIC and log likelihood.
 
 ```{r}
 
@@ -1093,24 +1093,24 @@ cols.sp <- c("Deosergestes corniculum" = "#16ABA8",
               "Challengerosergia hansjacobi" = "orchid1")
 
 #sergia/sergestes green purple pallette
-# cols.sp <- c(#Sergestes group
-#               "Deosergestes corniculum" = "#512E5F",
-#               "Deosergestes henseni" = "#633974", 
-#               "Allosergestes pectinatus" = "#76448A", 
-#               "Allosergestes sargassi" = "#884EA0",
-#               "Sergestes atlanticus" = "#9B59B6", 
-#               #"Neosergestes edwardsii" = "#AF7AC5"
-#               "Parasergestes vigilax" = "#C39BD3", 
-#               "Parasergestes armatus" = "#D7BDE2",
-#               "Eusergestes arcticus" = "#EBDEF0", 
-#              #Sergia group
-#               "Gardinerosergia splendens" = "#D4EFDF",
-#               "Robustosergia regalis" = "#A9DFBF", 
-#               "Robustosergia robusta" = "#52BE80",
-#               "Phorcosergia grandis" = "#27AE60",
-#               "Sergia tenuiremis" = "#1E8449",
-#               "Challengerosergia talismani" = "#196F3D",
-#               "Challengerosergia hansjacobi" = "#145A32")
+cols.sp <- c(#Sergestes group
+              "Deosergestes corniculum" = "#512E5F",
+              "Deosergestes henseni" = "#633974",
+              "Allosergestes pectinatus" = "#76448A",
+              "Allosergestes sargassi" = "#884EA0",
+              "Sergestes atlanticus" = "#9B59B6",
+              #"Neosergestes edwardsii" = "#AF7AC5"
+              "Parasergestes vigilax" = "#C39BD3",
+              "Parasergestes armatus" = "#D7BDE2",
+              "Eusergestes arcticus" = "#EBDEF0",
+             #Sergia group
+              "Gardinerosergia splendens" = "#D4EFDF",
+              "Robustosergia regalis" = "#A9DFBF",
+              "Robustosergia robusta" = "#52BE80",
+              "Phorcosergia grandis" = "#27AE60",
+              "Sergia tenuiremis" = "#1E8449",
+              "Challengerosergia talismani" = "#196F3D",
+              "Challengerosergia hansjacobi" = "#145A32")
 
 
 #set s limits by species for plots
@@ -1151,25 +1151,303 @@ plot_species <- ggplot(specimens_test, aes(x = Body_Length, y = Eye_Diameter, co
 ggplotly(plot_species)
 ```
 
-```{r, results = "hide"}
-#make plot with alpha = 1 for legend
-plot_species_leg <- ggplot(specimens_test, aes(x = Body_Length, y = Eye_Diameter, color =  species_text, shape = species_text, fill = species_text)) + 
-  geom_point(size = 2, alpha = 1) + 
+### Figure 1 revision
+
+Here we again plot the static allometry of all the species with sufficient sampling (n = 15). Here per reviewer suggestions, we split the data into two panels - one for the -sergestes group and one for the -sergia group. 
+
+First we make a panel showing the -sergestes data, with the -sergia regressions in a light gray for reference. 
+```{r species-fig1a, fig.width=9, fig.height=9}
+
+#reorder factor levels for figure legend (phylo order)
+specimens_test$species_text <- factor(specimens_test$species_text, 
+                                      levels = c("Deosergestes corniculum",
+                                                 "Deosergestes henseni",
+                                                 "Allosergestes pectinatus",
+                                                 "Allosergestes sargassi",
+                                                 "Sergestes atlanticus",
+                                                 "Parasergestes vigilax",
+                                                 "Parasergestes armatus",
+                                                 "Eusergestes arcticus",
+                                                 "Gardinerosergia splendens",
+                                                 "Robustosergia regalis",
+                                                 "Robustosergia robusta",
+                                                 "Phorcosergia grandis",
+                                                 "Sergia tenuiremis",
+                                                 "Challengerosergia talismani",
+                                                 "Challengerosergia hansjacobi"))
+
+#make shape pallette
+shapes.sp <- c("Deosergestes corniculum" = 21,
+              "Deosergestes henseni" = 22, 
+              "Allosergestes pectinatus" = 23, 
+              "Allosergestes sargassi" = 24,
+              "Sergestes atlanticus" = 25, 
+              "Parasergestes vigilax" = 21, 
+              "Parasergestes armatus" = 22,
+              "Eusergestes arcticus" = 23, 
+              "Gardinerosergia splendens" = 24, 
+              "Robustosergia regalis" = 25, 
+              "Robustosergia robusta" = 21, 
+              "Phorcosergia grandis" = 22,
+              "Sergia tenuiremis" = 23,
+              "Challengerosergia talismani" = 24,
+              "Challengerosergia hansjacobi" = 25)
+
+#rainbow palette
+cols.sp <- c(#Sergestes group
+              "Deosergestes corniculum" = "#16ABA8",
+              "Deosergestes henseni" = "#1f78b4",
+              "Allosergestes pectinatus" = "#3acf75",
+              "Allosergestes sargassi" = "#33a02c",
+              "Sergestes atlanticus" = "#fb9a99",
+              "Parasergestes vigilax" = "#e31a1c",
+              "Parasergestes armatus" = "#fdbf6f",
+              "Eusergestes arcticus" = "#ff7f00",
+              #Sergia group
+              "Gardinerosergia splendens" = "#E4E4E4",
+              "Robustosergia regalis" = "#E4E4E4",
+              "Robustosergia robusta" = "#E4E4E4",
+              "Phorcosergia grandis" = "#E4E4E4",
+              "Sergia tenuiremis" = "#E4E4E4",
+              "Challengerosergia talismani" = "#E4E4E4",
+              "Challengerosergia hansjacobi" = "#E4E4E4")
+
+
+#set s limits by species for plots
+limits <- specimens_test %>%
+  group_by(genus_species) %>%
+  summarise(max = max(Body_Length, na.rm = TRUE),
+            min = min(Body_Length, na.rm = TRUE))
+
+#make plot
+plot_sergestes <- ggplot(filter(specimens_test, Subgroup=="Sergestes"), aes(x = Body_Length, y = Eye_Diameter, color =  species_text, shape = species_text, fill = species_text)) + 
+  #Sergia group regressions (in background)
+    ##Gardinerosergia splendens
+    geom_segment(aes(x = limits$min[which(limits$genus_species == "Gardinerosergia_splendens")], xend = limits$max[which(limits$genus_species == "Gardinerosergia_splendens")], y = 10^(log10(limits$min[which(limits$genus_species == "Gardinerosergia_splendens")])*cc_species["Gardinerosergia_splendens", "slope"] + cc_species["Gardinerosergia_splendens", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Gardinerosergia_splendens")])*cc_species["Gardinerosergia_splendens", "slope"] + cc_species["Gardinerosergia_splendens", "elevation"])), color = cols.sp["Gardinerosergia splendens"]) + 
+    ##Robustosergia regalis
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Robustosergia_regalis")], xend = limits$max[which(limits$genus_species == "Robustosergia_regalis")], y = 10^(log10(limits$min[which(limits$genus_species == "Robustosergia_regalis")])*cc_species["Robustosergia_regalis", "slope"] + cc_species["Robustosergia_regalis", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Robustosergia_regalis")])*cc_species["Robustosergia_regalis", "slope"] + cc_species["Robustosergia_regalis", "elevation"])), color = cols.sp["Robustosergia regalis"]) +
+    ##Robustosergia robusta
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Robustosergia_robusta")], xend = limits$max[which(limits$genus_species == "Robustosergia_robusta")], y = 10^(log10(limits$min[which(limits$genus_species == "Robustosergia_robusta")])*cc_species["Robustosergia_robusta", "slope"] + cc_species["Robustosergia_robusta", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Robustosergia_robusta")])*cc_species["Robustosergia_robusta", "slope"] + cc_species["Robustosergia_robusta", "elevation"])), color = cols.sp["Robustosergia robusta"]) + 
+    ##Phorcosergia grandis
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Phorcosergia_grandis")], xend = limits$max[which(limits$genus_species == "Phorcosergia_grandis")], y = 10^(log10(limits$min[which(limits$genus_species == "Phorcosergia_grandis")])*cc_species["Phorcosergia_grandis", "slope"] + cc_species["Phorcosergia_grandis", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Phorcosergia_grandis")])*cc_species["Phorcosergia_grandis", "slope"] + cc_species["Phorcosergia_grandis", "elevation"])), color = cols.sp["Phorcosergia grandis"]) + 
+    ##Sergia tenuiremis
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Sergia_tenuiremis")], xend = limits$max[which(limits$genus_species == "Sergia_tenuiremis")], y = 10^(log10(limits$min[which(limits$genus_species == "Sergia_tenuiremis")])*cc_species["Sergia_tenuiremis", "slope"] + cc_species["Sergia_tenuiremis", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Sergia_tenuiremis")])*cc_species["Sergia_tenuiremis", "slope"] + cc_species["Sergia_tenuiremis", "elevation"])), color = cols.sp["Sergia tenuiremis"])+
+    ##Challengosergia talismani
+    geom_segment(aes(x = limits$min[which(limits$genus_species == "Challengerosergia_hansjacobi")], xend = limits$max[which(limits$genus_species == "Challengerosergia_hansjacobi")], y = 10^(log10(limits$min[which(limits$genus_species == "Challengerosergia_hansjacobi")])*cc_species["Challengerosergia_hansjacobi", "slope"] + cc_species["Challengerosergia_hansjacobi", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Challengerosergia_hansjacobi")])*cc_species["Challengerosergia_hansjacobi", "slope"] + cc_species["Challengerosergia_hansjacobi", "elevation"])), color = cols.sp["Challengerosergia hansjacobi"]) + 
+    ##Challengosergia hansjacobi
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Challengerosergia_talismani")], xend = limits$max[which(limits$genus_species == "Challengerosergia_talismani")], y = 10^(log10(limits$min[which(limits$genus_species == "Challengerosergia_talismani")])*cc_species["Challengerosergia_talismani", "slope"] + cc_species["Challengerosergia_talismani", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Challengerosergia_talismani")])*cc_species["Challengerosergia_talismani", "slope"] + cc_species["Challengerosergia_talismani", "elevation"])), color = cols.sp["Challengerosergia talismani"]) + 
+  #Sergestes data points
+  geom_point(size = 2, alpha = 0.4) + 
   scale_shape_manual(values = shapes.sp, name = "Species") + 
   scale_color_manual(values = cols.sp, name = "Species") +
   scale_fill_manual(values = cols.sp, name = "Species") +
+  scale_x_log10(name = "Body length (mm)", breaks = c(15,20,30,50,100)) + #makes x axis log scale and named
+  scale_y_log10(name = "Eye diameter (mm)", breaks = c(0.2,0.3,0.5,1, 2.6)) + #makes y axis log scale and named
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.text = element_text(face = "italic")) +
+  #Sergestes regressions (in forefront)
+      ##Allosergestes pectinatus
+    geom_segment(aes(x = limits$min[which(limits$genus_species == "Allosergestes_pectinatus")], xend = limits$max[which(limits$genus_species == "Allosergestes_pectinatus")], y = 10^(log10(limits$min[which(limits$genus_species == "Allosergestes_pectinatus")])*cc_species["Allosergestes_pectinatus", "slope"] + cc_species["Allosergestes_pectinatus", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Allosergestes_pectinatus")])*cc_species["Allosergestes_pectinatus", "slope"] + cc_species["Allosergestes_pectinatus", "elevation"])), color = cols.sp["Allosergestes pectinatus"]) +
+    ##Allosergestes sargassi
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Allosergestes_sargassi")], xend = limits$max[which(limits$genus_species == "Allosergestes_sargassi")], y = 10^(log10(limits$min[which(limits$genus_species == "Allosergestes_sargassi")])*cc_species["Allosergestes_sargassi", "slope"] + cc_species["Allosergestes_sargassi", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Allosergestes_sargassi")])*cc_species["Allosergestes_sargassi", "slope"] + cc_species["Allosergestes_sargassi", "elevation"])), color = cols.sp["Allosergestes sargassi"]) +
+    ##Deosergestes corniculum
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Deosergestes_corniculum")], xend = limits$max[which(limits$genus_species == "Deosergestes_corniculum")], y = 10^(log10(limits$min[which(limits$genus_species == "Deosergestes_corniculum")])*cc_species["Deosergestes_corniculum", "slope"] + cc_species["Deosergestes_corniculum", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Deosergestes_corniculum")])*cc_species["Deosergestes_corniculum", "slope"] + cc_species["Deosergestes_corniculum", "elevation"])), color = cols.sp["Deosergestes corniculum"]) +
+    ##Deosergestes henseni
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Deosergestes_henseni")], xend = limits$max[which(limits$genus_species == "Deosergestes_henseni")], y = 10^(log10(limits$min[which(limits$genus_species == "Deosergestes_henseni")])*cc_species["Deosergestes_henseni", "slope"] + cc_species["Deosergestes_henseni", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Deosergestes_henseni")])*cc_species["Deosergestes_henseni", "slope"] + cc_species["Deosergestes_henseni", "elevation"])), color = cols.sp["Deosergestes henseni"]) + 
+    ##Parasergestes armatus
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Parasergestes_armatus")], xend = limits$max[which(limits$genus_species == "Parasergestes_armatus")], y = 10^(log10(limits$min[which(limits$genus_species == "Parasergestes_armatus")])*cc_species["Parasergestes_armatus", "slope"] + cc_species["Parasergestes_armatus", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Parasergestes_armatus")])*cc_species["Parasergestes_armatus", "slope"] + cc_species["Parasergestes_armatus", "elevation"])), color = cols.sp["Parasergestes armatus"]) +
+    ##Parasergestes vigilax
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Parasergestes_vigilax")], xend = limits$max[which(limits$genus_species == "Parasergestes_vigilax")], y = 10^(log10(limits$min[which(limits$genus_species == "Parasergestes_vigilax")])*cc_species["Parasergestes_vigilax", "slope"] + cc_species["Parasergestes_vigilax", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Parasergestes_vigilax")])*cc_species["Parasergestes_vigilax", "slope"] + cc_species["Parasergestes_vigilax", "elevation"])), color = cols.sp["Parasergestes vigilax"]) +
+  ##Sergestes atlanticus
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Sergestes_atlanticus")], xend = limits$max[which(limits$genus_species == "Sergestes_atlanticus")], y = 10^(log10(limits$min[which(limits$genus_species == "Sergestes_atlanticus")])*cc_species["Sergestes_atlanticus", "slope"] + cc_species["Sergestes_atlanticus", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Sergestes_atlanticus")])*cc_species["Sergestes_atlanticus", "slope"] + cc_species["Sergestes_atlanticus", "elevation"])), color = cols.sp["Sergestes atlanticus"]) +
+   ##Eusergestes arcticus
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Eusergestes_arcticus")], xend = limits$max[which(limits$genus_species == "Eusergestes_arcticus")], y = 10^(log10(limits$min[which(limits$genus_species == "Eusergestes_arcticus")])*cc_species["Eusergestes_arcticus", "slope"] + cc_species["Eusergestes_arcticus", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Eusergestes_arcticus")])*cc_species["Eusergestes_arcticus", "slope"] + cc_species["Eusergestes_arcticus", "elevation"])), color = cols.sp["Eusergestes arcticus"])+
+  theme(legend.text = element_text(face = "italic"))
+
+#interactive plot
+ggplotly(plot_sergestes)
+```
+
+Then we make a panel showing the -sergia data, with the -sergestes regressions in a light gray for reference. 
+
+```{r species-fig1b, fig.width=9, fig.height=9}
+
+#rainbow palette
+cols.sp <- c(#Sergestes group
+              "Deosergestes corniculum" = "#E4E4E4",
+              "Deosergestes henseni" = "#E4E4E4",
+              "Allosergestes pectinatus" = "#E4E4E4",
+              "Allosergestes sargassi" = "#E4E4E4",
+              "Sergestes atlanticus" = "#E4E4E4",
+              "Parasergestes vigilax" = "#E4E4E4",
+              "Parasergestes armatus" = "#E4E4E4",
+              "Eusergestes arcticus" = "#E4E4E4",
+              #Sergia group
+              "Gardinerosergia splendens" = "#cab2d6",
+              "Robustosergia regalis" = "#6a3d9a",
+              "Robustosergia robusta" = "gray31",
+              "Phorcosergia grandis" = "burlywood4",
+              "Sergia tenuiremis" = "black",
+              "Challengerosergia talismani" = "maroon1",
+              "Challengerosergia hansjacobi" = "orchid1")
+
+#set s limits by species for plots
+limits <- specimens_test %>%
+  group_by(genus_species) %>%
+  summarise(max = max(Body_Length, na.rm = TRUE),
+            min = min(Body_Length, na.rm = TRUE))
+
+#make plot
+plot_sergia <- ggplot(filter(specimens_test, Subgroup=="Sergia"), aes(x = Body_Length, y = Eye_Diameter, color =  species_text, shape = species_text, fill = species_text)) + 
+    #Sergestes regressions (in background)
+      ##Allosergestes pectinatus
+    geom_segment(aes(x = limits$min[which(limits$genus_species == "Allosergestes_pectinatus")], xend = limits$max[which(limits$genus_species == "Allosergestes_pectinatus")], y = 10^(log10(limits$min[which(limits$genus_species == "Allosergestes_pectinatus")])*cc_species["Allosergestes_pectinatus", "slope"] + cc_species["Allosergestes_pectinatus", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Allosergestes_pectinatus")])*cc_species["Allosergestes_pectinatus", "slope"] + cc_species["Allosergestes_pectinatus", "elevation"])), color = cols.sp["Allosergestes pectinatus"]) +
+    ##Allosergestes sargassi
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Allosergestes_sargassi")], xend = limits$max[which(limits$genus_species == "Allosergestes_sargassi")], y = 10^(log10(limits$min[which(limits$genus_species == "Allosergestes_sargassi")])*cc_species["Allosergestes_sargassi", "slope"] + cc_species["Allosergestes_sargassi", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Allosergestes_sargassi")])*cc_species["Allosergestes_sargassi", "slope"] + cc_species["Allosergestes_sargassi", "elevation"])), color = cols.sp["Allosergestes sargassi"]) +
+    ##Deosergestes corniculum
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Deosergestes_corniculum")], xend = limits$max[which(limits$genus_species == "Deosergestes_corniculum")], y = 10^(log10(limits$min[which(limits$genus_species == "Deosergestes_corniculum")])*cc_species["Deosergestes_corniculum", "slope"] + cc_species["Deosergestes_corniculum", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Deosergestes_corniculum")])*cc_species["Deosergestes_corniculum", "slope"] + cc_species["Deosergestes_corniculum", "elevation"])), color = cols.sp["Deosergestes corniculum"]) +
+    ##Deosergestes henseni
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Deosergestes_henseni")], xend = limits$max[which(limits$genus_species == "Deosergestes_henseni")], y = 10^(log10(limits$min[which(limits$genus_species == "Deosergestes_henseni")])*cc_species["Deosergestes_henseni", "slope"] + cc_species["Deosergestes_henseni", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Deosergestes_henseni")])*cc_species["Deosergestes_henseni", "slope"] + cc_species["Deosergestes_henseni", "elevation"])), color = cols.sp["Deosergestes henseni"]) + 
+    ##Parasergestes armatus
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Parasergestes_armatus")], xend = limits$max[which(limits$genus_species == "Parasergestes_armatus")], y = 10^(log10(limits$min[which(limits$genus_species == "Parasergestes_armatus")])*cc_species["Parasergestes_armatus", "slope"] + cc_species["Parasergestes_armatus", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Parasergestes_armatus")])*cc_species["Parasergestes_armatus", "slope"] + cc_species["Parasergestes_armatus", "elevation"])), color = cols.sp["Parasergestes armatus"]) +
+    ##Parasergestes vigilax
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Parasergestes_vigilax")], xend = limits$max[which(limits$genus_species == "Parasergestes_vigilax")], y = 10^(log10(limits$min[which(limits$genus_species == "Parasergestes_vigilax")])*cc_species["Parasergestes_vigilax", "slope"] + cc_species["Parasergestes_vigilax", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Parasergestes_vigilax")])*cc_species["Parasergestes_vigilax", "slope"] + cc_species["Parasergestes_vigilax", "elevation"])), color = cols.sp["Parasergestes vigilax"]) +
+  ##Sergestes atlanticus
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Sergestes_atlanticus")], xend = limits$max[which(limits$genus_species == "Sergestes_atlanticus")], y = 10^(log10(limits$min[which(limits$genus_species == "Sergestes_atlanticus")])*cc_species["Sergestes_atlanticus", "slope"] + cc_species["Sergestes_atlanticus", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Sergestes_atlanticus")])*cc_species["Sergestes_atlanticus", "slope"] + cc_species["Sergestes_atlanticus", "elevation"])), color = cols.sp["Sergestes atlanticus"]) +
+   ##Eusergestes arcticus
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Eusergestes_arcticus")], xend = limits$max[which(limits$genus_species == "Eusergestes_arcticus")], y = 10^(log10(limits$min[which(limits$genus_species == "Eusergestes_arcticus")])*cc_species["Eusergestes_arcticus", "slope"] + cc_species["Eusergestes_arcticus", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Eusergestes_arcticus")])*cc_species["Eusergestes_arcticus", "slope"] + cc_species["Eusergestes_arcticus", "elevation"])), color = cols.sp["Eusergestes arcticus"])+
+  theme(legend.text = element_text(face = "italic"))+
+  #Sergia data points
+  geom_point(size = 2, alpha = 0.4) + 
+  scale_shape_manual(values = shapes.sp, name = "Species") + 
+  scale_color_manual(values = cols.sp, name = "Species") +
+  scale_fill_manual(values = cols.sp, name = "Species") +
+  scale_x_log10(name = "Body length (mm)", breaks = c(15,20,30,50,100)) + #makes x axis log scale and named
+  scale_y_log10(name = "Eye diameter (mm)", breaks = c(0.2,0.3,0.5,1, 2.6)) + #makes y axis log scale and named
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.text = element_text(face = "italic")) +
+  #Sergia group regressions (in forefront)
+    ##Gardinerosergia splendens
+    geom_segment(aes(x = limits$min[which(limits$genus_species == "Gardinerosergia_splendens")], xend = limits$max[which(limits$genus_species == "Gardinerosergia_splendens")], y = 10^(log10(limits$min[which(limits$genus_species == "Gardinerosergia_splendens")])*cc_species["Gardinerosergia_splendens", "slope"] + cc_species["Gardinerosergia_splendens", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Gardinerosergia_splendens")])*cc_species["Gardinerosergia_splendens", "slope"] + cc_species["Gardinerosergia_splendens", "elevation"])), color = cols.sp["Gardinerosergia splendens"]) + 
+    ##Robustosergia regalis
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Robustosergia_regalis")], xend = limits$max[which(limits$genus_species == "Robustosergia_regalis")], y = 10^(log10(limits$min[which(limits$genus_species == "Robustosergia_regalis")])*cc_species["Robustosergia_regalis", "slope"] + cc_species["Robustosergia_regalis", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Robustosergia_regalis")])*cc_species["Robustosergia_regalis", "slope"] + cc_species["Robustosergia_regalis", "elevation"])), color = cols.sp["Robustosergia regalis"]) +
+    ##Robustosergia robusta
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Robustosergia_robusta")], xend = limits$max[which(limits$genus_species == "Robustosergia_robusta")], y = 10^(log10(limits$min[which(limits$genus_species == "Robustosergia_robusta")])*cc_species["Robustosergia_robusta", "slope"] + cc_species["Robustosergia_robusta", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Robustosergia_robusta")])*cc_species["Robustosergia_robusta", "slope"] + cc_species["Robustosergia_robusta", "elevation"])), color = cols.sp["Robustosergia robusta"]) + 
+    ##Phorcosergia grandis
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Phorcosergia_grandis")], xend = limits$max[which(limits$genus_species == "Phorcosergia_grandis")], y = 10^(log10(limits$min[which(limits$genus_species == "Phorcosergia_grandis")])*cc_species["Phorcosergia_grandis", "slope"] + cc_species["Phorcosergia_grandis", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Phorcosergia_grandis")])*cc_species["Phorcosergia_grandis", "slope"] + cc_species["Phorcosergia_grandis", "elevation"])), color = cols.sp["Phorcosergia grandis"]) + 
+    ##Sergia tenuiremis
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Sergia_tenuiremis")], xend = limits$max[which(limits$genus_species == "Sergia_tenuiremis")], y = 10^(log10(limits$min[which(limits$genus_species == "Sergia_tenuiremis")])*cc_species["Sergia_tenuiremis", "slope"] + cc_species["Sergia_tenuiremis", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Sergia_tenuiremis")])*cc_species["Sergia_tenuiremis", "slope"] + cc_species["Sergia_tenuiremis", "elevation"])), color = cols.sp["Sergia tenuiremis"])+
+    ##Challengosergia talismani
+    geom_segment(aes(x = limits$min[which(limits$genus_species == "Challengerosergia_hansjacobi")], xend = limits$max[which(limits$genus_species == "Challengerosergia_hansjacobi")], y = 10^(log10(limits$min[which(limits$genus_species == "Challengerosergia_hansjacobi")])*cc_species["Challengerosergia_hansjacobi", "slope"] + cc_species["Challengerosergia_hansjacobi", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Challengerosergia_hansjacobi")])*cc_species["Challengerosergia_hansjacobi", "slope"] + cc_species["Challengerosergia_hansjacobi", "elevation"])), color = cols.sp["Challengerosergia hansjacobi"]) + 
+    ##Challengosergia hansjacobi
+  geom_segment(aes(x = limits$min[which(limits$genus_species == "Challengerosergia_talismani")], xend = limits$max[which(limits$genus_species == "Challengerosergia_talismani")], y = 10^(log10(limits$min[which(limits$genus_species == "Challengerosergia_talismani")])*cc_species["Challengerosergia_talismani", "slope"] + cc_species["Challengerosergia_talismani", "elevation"]), yend = 10^(log10(limits$max[which(limits$genus_species == "Challengerosergia_talismani")])*cc_species["Challengerosergia_talismani", "slope"] + cc_species["Challengerosergia_talismani", "elevation"])), color = cols.sp["Challengerosergia talismani"])
+
+#interactive plot
+ggplotly(plot_sergia)
+```
+
+
+```{r, results = "hide"}
+
+# Build legend for sergia----
+
+#cols and shapes
+cols.sergia <- c("Gardinerosergia splendens" = "#cab2d6",
+              "Robustosergia regalis" = "#6a3d9a",
+              "Robustosergia robusta" = "gray31",
+              "Phorcosergia grandis" = "burlywood4",
+              "Sergia tenuiremis" = "black",
+              "Challengerosergia talismani" = "maroon1",
+              "Challengerosergia hansjacobi" = "orchid1")
+
+shapes.sergia <- c("Gardinerosergia splendens" = 24, 
+              "Robustosergia regalis" = 25, 
+              "Robustosergia robusta" = 21, 
+              "Phorcosergia grandis" = 22,
+              "Sergia tenuiremis" = 23,
+              "Challengerosergia talismani" = 24,
+              "Challengerosergia hansjacobi" = 25)
+
+#make -sergia legend with alpha = 1
+plot_sergia_leg <- ggplot(filter(specimens_test, Subgroup=="Sergia"), aes(x = Body_Length, y = Eye_Diameter, color =  species_text, shape = species_text, fill = species_text)) +
+  geom_point(size = 2, alpha = 1) + 
+  scale_shape_manual(values = shapes.sergia, name = "-sergia group") + 
+  scale_color_manual(values = cols.sergia, name = "-sergia group") +
+  scale_fill_manual(values = cols.sergia, name = "-sergia group") +
   theme_bw() +
   theme(legend.text = element_text(face = "italic"))
 
-# remove legend from previous plot
-plot <- plot_species + theme(legend.position = "none")
+# extract legend from this plot with alpha = 1
+leg.sergia <- get_legend(plot_sergia_leg)
+
+# Build legend for sergestes-----
+# Build legend for sergia----
+
+#cols and shapes
+cols.sergestes <- c("Deosergestes corniculum" = "#16ABA8",
+              "Deosergestes henseni" = "#1f78b4",
+              "Allosergestes pectinatus" = "#3acf75",
+              "Allosergestes sargassi" = "#33a02c",
+              "Sergestes atlanticus" = "#fb9a99",
+              "Parasergestes vigilax" = "#e31a1c",
+              "Parasergestes armatus" = "#fdbf6f",
+              "Eusergestes arcticus" = "#ff7f00")
+
+shapes.sergestes <- c("Deosergestes corniculum" = 21,
+              "Deosergestes henseni" = 22, 
+              "Allosergestes pectinatus" = 23, 
+              "Allosergestes sargassi" = 24,
+              "Sergestes atlanticus" = 25, 
+              "Parasergestes vigilax" = 21, 
+              "Parasergestes armatus" = 22,
+              "Eusergestes arcticus" = 23)
+
+#make -sergia legend with alpha = 1
+plot_sergestes_leg <- ggplot(filter(specimens_test, Subgroup=="Sergestes"), aes(x = Body_Length, y = Eye_Diameter, color =  species_text, shape = species_text, fill = species_text)) +
+  geom_point(size = 2, alpha = 1) + 
+  scale_shape_manual(values = shapes.sergestes, name = "-sergestes group") + 
+  scale_color_manual(values = cols.sergestes, name = "-sergestes group") +
+  scale_fill_manual(values = cols.sergestes, name = "-sergestes group") +
+  theme_bw() +
+  theme(legend.text = element_text(face = "italic"))
 
 # extract legend from this plot with alpha = 1
-leg <- get_legend(plot_species_leg)
+leg.sergestes <- get_legend(plot_sergestes_leg)
+
+```
+
+```{r}
+
+fig.a <- plot_sergestes + 
+  theme_classic() +
+  theme(legend.position = "none") 
+
+
+fig.b <- plot_sergia +
+  theme_classic() +
+  theme(legend.position = "none", axis.title.y = element_blank(), axis.text.y = element_blank())
+  
+
+# arrange panels in figure
+plots <- plot_grid(fig.a, fig.b,
+           align = 'vh', #align horizontally and vertically
+           axis = 'lb',
+           labels = c("A", "B"),
+           hjust = -0.5, #adjustment for panel labels
+           nrow = 1) #number of rows in grids
+
+#arrange legends vertically
+legends <- plot_grid(leg.sergestes, leg.sergia,
+                     align = 'vh', 
+                     axis = 't',
+                     nrow = 2) #number of rows in grids
+
+#put together figure
+plot_grid(plots, legends, ncol = 2, rel_widths = c(1, 0.5), align = 'vh')
 
 #export figure
-#png("../Figures/dev-species.png", width = 12, height = 12, units = "in", res = 500)
-pdf("../Figures/Fig-1.pdf", width = 9, height = 5)
-plot_grid(plot, leg, ncol = 2, rel_widths = c(1, .4))
+pdf("../Figures/Fig-1-revised.pdf", width = 12, height = 4.5)
+plot_grid(plots, legends, ncol = 2, rel_widths = c(1, 0.5), align = 'vh')
 dev.off()
 ```
+
