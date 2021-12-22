@@ -138,7 +138,7 @@ plot_model_abs <- ggplot(modeling, aes(x = body_mm, y = abs_sight_m, color =  sp
   ylim(c(0,4)) +
   theme_bw() +
 theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.text = element_text(face = "italic")) +
-   geom_abline(data = cc_olsabs, aes(intercept = cc_olsabs[1,1], slope = cc_olsabs[2,1]), linetype = "dashed")
+   geom_abline(data = cc_olsabs, aes(intercept = cc_olsabs[1,1], slope = cc_olsabs[2,1]), linetype = "solid")
 
 # Interactive plot
 ggplotly(plot_model_abs)
@@ -168,8 +168,8 @@ plot_model_rel <- ggplot(modeling, aes(x = body_mm, y = rel_sight, color =  spec
   xlim(c(0,60)) +
   ylim(c(0,90)) +
   theme_bw() +
-theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.text = element_text(face = "italic")) +
-   geom_abline(data = cc_olsrel, aes(intercept = cc_olsrel[1,1], slope = cc_olsrel[2,1]), linetype = "dashed")
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.text = element_text(face = "italic")) 
+   #geom_abline(data = cc_olsrel, aes(intercept = cc_olsrel[1,1], slope = cc_olsrel[2,1]), linetype = "dashed", color = "gray")
 
 # Interactive plot
 ggplotly(plot_model_rel)
