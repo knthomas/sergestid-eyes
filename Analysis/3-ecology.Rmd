@@ -1259,6 +1259,7 @@ summary(pgls_eyedaydepth0)
 #save model coefficients
 cc_eyedaydepth0 <- as.data.frame(coefficients(pgls_eyedaydepth0))
 ```
+
 The relationship between aboslute eye size and depth changes significantly at 1000m when lambda = 0. 
 
 #### model where lambda = 1
@@ -1349,7 +1350,7 @@ cc_bodydaydepth1 <- as.data.frame(coefficients(pgls_bodydaydepth1))
 The relationship between body size and depth changes significantly at 1000m when lambda = 1. Both models give consistent results. 
 
 
-### Eye size vs. mean nighttime depth x zone
+### Eye size vs. nighttime zone (epipelagic vs. deeper)
 
 Here, we fit PGLS models to test whether eye size changes above and below 200m for nighttime depths (the border of the food-rich epipelagic zone). We fit eye diameter ~ night depth bin at both lambda = 0 and lambda = 1. 
 
@@ -1381,6 +1382,7 @@ summary(pgls_eyenightdepth0)
 cc_eyenightdepth0 <- as.data.frame(coefficients(pgls_eyenightdepth0))
 
 ```
+
 There is no significant difference in absolute eye size above and below 200m at night when lambda = 0. 
 
 #### model with lambda = 1
