@@ -1,0 +1,191 @@
+---
+title: "Exploration of preservation effects"
+author: "Katie Thomas"
+date: "12/20/2021"
+output:
+  html_document:
+    keep_md: true
+    code_fold: hide
+    theme: flatly
+    toc: yes
+    toc_float: yes
+  pdf_document:
+    toc: yes
+---
+
+<style type="text/css">
+
+body{ /* Normal  */
+      font-size: 17px;
+  }
+  
+</style>
+
+```{r setup, include=FALSE}
+
+#set rmarkdown options
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.height = 5, fig.width = 8, attr.output='style="max-height: 300px;"') 
+
+#load libraries
+library(cowplot)
+library(plyr)
+library(knitr)
+library(kableExtra)
+library(gridExtra)
+library(evobiR)
+library(geiger)
+library(phylotools)
+library(ape)
+library(caper)
+library(phytools)
+library(smatr)
+library(lme4)
+library(tidyverse)
+library(plotly)
+```
+
+
+Here, we examine the effect of dropping specimens preserved in paraformaldehyde from the analysis on the regressions for intraspecific eye-body allometry. 
+
+# Import data
+
+Here we import our specimen data (with outliers already removed), then remove all data where the preservation type was paraformaldehyde, as this had the largest effect in our LMM model. 
+
+```{r}
+#import specimen data
+specimens <- data.frame(read.csv("../Data/cleaned data/specimen_data_tidy_no-outliers.csv", header=TRUE)) 
+```
+
+Before we remove any data, here are the sample sizes for each species. Only the species with PFA samples will be affected.
+
+```{r}
+specimens %>%
+  group_by(genus_species) %>%
+  count(Preservation)
+```
+Now we remove all the PFA samples. 
+
+```{r}
+#remove PFA samples
+specimens2 <- specimens %>%
+  filter(Preservation != "paraformaldehyde")
+```
+
+This removes 45 data points from our data set. 
+
+Here are the new sample sizes:
+
+```{r}
+specimens2 %>%
+  group_by(genus_species) %>%
+  count(Preservation)
+```
+Now we can rerun SMA regressions to see if we get similar results to the full dataset. 
+
+# Test whether species differ in static allometry
+
+## Linear mixed model to test whether slopes vary across species
+
+We again remove N. edwardsii, since we didn't have enough samples to estimate static allometry. 
+
+```{r}
+#Remove species with insufficient sampling
+specimens_test <- specimens2 %>%
+  filter(genus_species != "Neosergestes_edwardsii") %>%
+  mutate(species_text = as.factor(paste(Genus, Species, sep = " "))) # Add labels for species text
+```
+
+### Fixed slope (variable intercepts) model
+
+```{r fixed-slope}
+
+# variable intercepts model (species can have different intercepts but share mean slope) -------
+lme_fixed <- lmer(log10(Eye_Diameter) ~ log10(Body_Length) + (1|genus_species), 
+                  data = specimens_test)
+
+# summary 
+summary(lme_fixed)
+
+# intercepts (variable) and slope (constant)
+coef(lme_fixed)
+
+# AIC
+AIC(lme_fixed)
+
+#fixed effects
+fixef(lme_fixed)
+
+#confidence intervals
+## if these overlap zero, we do not have good support for significant effects
+## if .sig01, which is our estimate of the variability in the random effect is very large and very widely defined, t indicates we may have a lack of precision between our groups - either because the group effect is small between groups, we have too few groups to get a more precise estimate, we have too few units within each group, or a combination of all of the above.
+confint(lme_fixed, level = 0.95)
+
+```
+
+
+### Variable slopes model 
+
+```{r variable-slope}
+# variable slopes model (species can have different slopes/interaction effect between body size and species on eye size) -------
+lme_variable <- lmer(log10(Eye_Diameter) ~ log10(Body_Length) + (1 + log10(Body_Length) | genus_species), 
+                     data = specimens_test)
+
+# summary
+summary(lme_variable)
+
+# intercepts (variable) and slope (constant)
+coef(lme_variable)
+
+
+# AIC
+AIC(lme_variable)
+
+#fixed effects
+fixef(lme_variable)
+
+#confidence intervals
+## if these overlap zero, we do not have good support for significant effects
+## if .sig01, which is our estimate of the variability in the random effect is very large and very widely defined, t indicates we may have a lack of precision between our groups - either because the group effect is small between groups, we have too few groups to get a more precise estimate, we have too few units within each group, or a combination of all of the above.
+confint(lme_variable, level = 0.95)
+```
+
+### Compare models
+
+```{r}
+
+#model AIC comparison
+AIC(lme_fixed, lme_variable)
+
+#log likelihood comparison
+anova(lme_fixed, lme_variable, refit=FALSE)
+```
+
+Here we find by comparing AIC scores and log likelihoods that the model with variable slopes is better supported than the one with fixed slopes. We have evidence here that species differ significantly in the slopes of their static eye-body allometries rather than following a shared growth trajectory. This is consistent with our findings before removing PFA samples.
+
+## Linear SMA regression for pairwise comparisons among species slopes
+
+```{r species-smas}
+
+# Model for static allometry across specimens with species and species*body size interaction as covariates
+sma_species <- sma(formula = Eye_Diameter ~ Body_Length * genus_species, 
+            data = specimens_test, 
+            log = "xy", #sets both x and y variables as logged
+            method="SMA", #defines SMA as model
+            multcomp = TRUE, # adds pairwise comparisons between groups
+            multcompmethod = "adjusted", # adjusts p-value for multiple comparisons
+            alpha = 0.05) 
+
+#plot fit, residuals, qq
+par(mfrow = c(2,2)) #make plot window 2x2
+plot(sma_species, which = "default",type = "o") 
+plot(sma_species,which = "residual",type = "o")
+plot(sma_species, which = "qq", type = "o")
+par(mfrow = c(1,1)) 
+
+#view fits
+summary(sma_species)
+
+#save coefficients of fits as object
+cc_species <- data.frame(coef(sma_species))
+```
+Here we also still find that slopes across species are not equal (as we did when PFA specimens were included). If you scroll through the output, you can also see the estimate for intercept ("elevation") and slope with 95% confidence intervals (upper and lower limits) for each species, along with the R2 and p-value for that species. This should allow for any comparisons to the fill dataset. Note however that only a handful of species actually had PFA samples in the first place, so some should be unchanged.
