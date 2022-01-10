@@ -1371,17 +1371,16 @@ shapes.sergia <- c("Gardinerosergia splendens" = 24,
 #make -sergia legend with alpha = 1
 plot_sergia_leg <- ggplot(filter(specimens_test, Subgroup=="Sergia"), aes(x = Body_Length, y = Eye_Diameter, color =  species_text, shape = species_text, fill = species_text)) +
   geom_point(size = 2, alpha = 1) + 
-  scale_shape_manual(values = shapes.sergia, name = "-sergia group") + 
-  scale_color_manual(values = cols.sergia, name = "-sergia group") +
-  scale_fill_manual(values = cols.sergia, name = "-sergia group") +
+  scale_shape_manual(values = shapes.sergia, name = "-sergia") + 
+  scale_color_manual(values = cols.sergia, name = "-sergia") +
+  scale_fill_manual(values = cols.sergia, name = "-sergia") +
   theme_bw() +
-  theme(legend.text = element_text(face = "italic"))
+  theme(legend.text = element_text(face = "italic"), legend.title = element_text(face = "italic"))
 
 # extract legend from this plot with alpha = 1
 leg.sergia <- get_legend(plot_sergia_leg)
 
 # Build legend for sergestes-----
-# Build legend for sergia----
 
 #cols and shapes
 cols.sergestes <- c("Deosergestes corniculum" = "#16ABA8",
@@ -1402,14 +1401,24 @@ shapes.sergestes <- c("Deosergestes corniculum" = 21,
               "Parasergestes armatus" = 22,
               "Eusergestes arcticus" = 23)
 
+labs.sergestes <- c("Deosergestes corniculum",
+              "Deosergestes henseni", 
+              "Allosergestes pectinatus *", 
+              "Allosergestes sargassi *",
+              "Sergestes atlanticus *", 
+              "Parasergestes vigilax *", 
+              "Parasergestes armatus",
+              "Eusergestes arcticus")
+
 #make -sergia legend with alpha = 1
 plot_sergestes_leg <- ggplot(filter(specimens_test, Subgroup=="Sergestes"), aes(x = Body_Length, y = Eye_Diameter, color =  species_text, shape = species_text, fill = species_text)) +
   geom_point(size = 2, alpha = 1) + 
-  scale_shape_manual(values = shapes.sergestes, name = "-sergestes group") + 
-  scale_color_manual(values = cols.sergestes, name = "-sergestes group") +
-  scale_fill_manual(values = cols.sergestes, name = "-sergestes group") +
+  scale_shape_manual(values = shapes.sergestes, name = "-sergestes", 
+                     labels = ) + 
+  scale_color_manual(values = cols.sergestes, name = "-sergestes") +
+  scale_fill_manual(values = cols.sergestes, name = "-sergestes") +
   theme_bw() +
-  theme(legend.text = element_text(face = "italic"))
+  theme(legend.text = element_text(face = "italic"), legend.title = element_text(face = "italic"))
 
 # extract legend from this plot with alpha = 1
 leg.sergestes <- get_legend(plot_sergestes_leg)
