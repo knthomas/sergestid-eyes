@@ -1531,24 +1531,28 @@ plot_eye_night
 #name panels
 fig.a <- plot_eye_day + theme(legend.position = "none") 
 fig.b <- plot_body_day + theme(legend.position = "none") 
-fig.c <- plot_eye_night + theme(legend.position = "none") 
 
 #arrange plots in panels
-plots <- plot_grid(fig.a, fig.b, fig.c, #list of plots to arrange in grid
+plots <- plot_grid(fig.a, fig.b, #list of plots to arrange in grid
            align = 'vh', #align horizontally and vertically
            axis = 'lb',
-           labels = c("A", "B", "C"), #panel labels for figure
+           labels = c("A", "B"), #panel labels for figure
            hjust = -1, #adjustment for panel labels
-           nrow = 3) #number of rows in grids
+           nrow = 2) #number of rows in grids
 
 # extract legend from Rana temporaria figure
 leg <- get_legend(fig.a + theme(legend.position="right"))
 
 #export figure
-pdf("../Figures/Fig-5.pdf", width = 6, height = 9)
+pdf("../Figures/Fig-5.pdf", width = 7, height = 5.5)
 plot_grid(plots, leg, ncol = 2, rel_widths = c(1, .5))
 dev.off()
 
+#eps format
+setEPS()
+postscript("../Figures/Fig-5.eps", width = 7, height = 5.5)
+plot_grid(plots, leg, ncol = 2, rel_widths = c(1, .5))
+dev.off()
 ```
 
 ## Habitat
