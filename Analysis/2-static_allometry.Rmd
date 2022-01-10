@@ -1414,9 +1414,11 @@ labs.sergestes <- c("Deosergestes corniculum",
 plot_sergestes_leg <- ggplot(filter(specimens_test, Subgroup=="Sergestes"), aes(x = Body_Length, y = Eye_Diameter, color =  species_text, shape = species_text, fill = species_text)) +
   geom_point(size = 2, alpha = 1) + 
   scale_shape_manual(values = shapes.sergestes, name = "-sergestes", 
-                     labels = ) + 
-  scale_color_manual(values = cols.sergestes, name = "-sergestes") +
-  scale_fill_manual(values = cols.sergestes, name = "-sergestes") +
+                     labels = labs.sergestes) + 
+  scale_color_manual(values = cols.sergestes, name = "-sergestes", 
+                     labels = labs.sergestes) + 
+  scale_fill_manual(values = cols.sergestes, name = "-sergestes", 
+                     labels = labs.sergestes) + 
   theme_bw() +
   theme(legend.text = element_text(face = "italic"), legend.title = element_text(face = "italic"))
 
@@ -1456,6 +1458,12 @@ plot_grid(plots, legends, ncol = 2, rel_widths = c(1, 0.5), align = 'vh')
 
 #export figure
 pdf("../Figures/Fig-1-revised.pdf", width = 12, height = 4.5)
+plot_grid(plots, legends, ncol = 2, rel_widths = c(1, 0.5), align = 'vh')
+dev.off()
+
+#eps format
+setEPS()
+postscript("../Figures/Fig-1-revised.eps", width = 12, height = 4.5)
 plot_grid(plots, legends, ncol = 2, rel_widths = c(1, 0.5), align = 'vh')
 dev.off()
 ```
