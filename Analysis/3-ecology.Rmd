@@ -710,6 +710,7 @@ anova(pgls_photo0_bin_abs)
 #parameter estimates
 summary(pgls_photo0_bin_abs)
 ```
+
 When lambda = 0, there is a significant effect of photophore type on absolute eye size, and the contrasts show that species with organs of pesta have significantly smaller mean relative eye sizes than those with other types of organ. 
 
 #### Model with lambda = 1
@@ -735,11 +736,12 @@ anova(pgls_photo1_bin_abs)
 #parameter estimates
 summary(pgls_photo1_bin_abs)
 ```
+
 When lambda = 1, there is no significant effect of photophore type on absolute eye size.
 
 ### Relative eye size vs. organ type
 
-Here we a model log10(eye diameter) vs. log10(body length) + photophore type. Two PGLS models are fit with lambda = 0 and lambda = 1. 
+Here we a model log10(eye diameter) vs. log10(body length) + bioluminescent organ type (organ of pesta, photophore, or none). Two PGLS models are fit with lambda = 0 and lambda = 1. 
 
 #### Model where lambda = 0
 
@@ -764,6 +766,7 @@ anova(pgls_photo0_bin)
 #parameter estimates
 summary(pgls_photo0_bin)
 ```
+
 Photophore type has a significant effect on relative eye size when lambda = 0. 
 
 #### Model where lambda = 1
@@ -791,6 +794,141 @@ summary(pgls_photo1_bin)
 ```
 
 We find that organ type (organ of pesta, no organ of pesta, no photophores at all), has a significant effect on eye size in both models (lambda = 1 and lambda = 0).
+
+### Adding lensed vs. unlensed photophores
+
+It looks like species with lenses photophores might have smaller eyes than those with unlensed photophores. Here, we take a quick look at whether separating out these states for absolute or relative eye size shows significant effects. Both models use lambda = 0. 
+
+#### Absolute eye size vs. organ type (more states)
+
+Here we test absolute eye size vs. bioluminescent organ type with increased states (organ of pesta, lensed photophore, unlensed photophore, none).
+
+```{r lambda0-photo-abs}
+
+#fit model for eye diameter ~ body length (lambda = 0)
+pgls_abs_photo0 <- pgls(eye_av ~ Organ, 
+               data = species.comp, 
+               lambda = 0.00001, #set lambda to 0
+               bounds=list(lambda=c(0.00001,0.00001)),
+               param.CI = 0.95)
+
+#check model assumptions
+par(mar = c(4,4,2,2))
+par(mfrow = c(2, 2))
+plot(pgls_abs_photo0)
+par(mfrow = c(1, 1))
+
+#main effects
+anova(pgls_abs_photo0)
+
+#parameter estimates
+summary(pgls_abs_photo0)
+```
+
+When lambda is set to 0, there is a significant effect of organ type on absolute eye size.
+
+#### Relative eye size vs. organ type (more states)
+
+Here we test relative eye size vs. bioluminescent organ type with increased states (organ of pesta, lensed photophore, unlensed photophore, none) by treating body size and organ type as covariates.
+ 
+```{r lambda0-photo}
+
+#fit model for eye diameter ~ body length (lambda = 0)
+pgls_photo0 <- pgls(log10(eye_av) ~ log10(length_av) + Organ, 
+               data = species.comp, 
+               lambda = 0.00001, #set lambda to 0
+               bounds=list(lambda=c(0.00001,0.00001)),
+               param.CI = 0.95)
+
+#check model assumptions
+par(mar = c(4,4,2,2))
+par(mfrow = c(2, 2))
+plot(pgls_photo0)
+par(mfrow = c(1, 1))
+
+#parameter estimates
+summary(pgls_photo0)
+
+anova(pgls_photo0)
+
+#save coefficients of fits as object
+cc_pgls_photo0 <- data.frame(coef(pgls_photo0))
+```
+
+# ADDITION ##############
+
+Reset levels for photophores so we are comparing to unlensed photophores rather than to organs of pesta. 
+
+```{r}
+#reorder photophore bins
+species3 <- species %>%
+  mutate(photo3 = factor(Organ, levels = c("unlensed","lensed", "pesta", "none")))
+
+#use caper function to combine phylogeny and data into one object (this function also matches species names in tree and dataset)
+species.comp3 <- comparative.data(data = species3, phy = tree, names.col = "genus_species", vcv = TRUE, na.omit = FALSE, warn.dropped = TRUE)
+
+#check for dropped tips or dropped species
+species.comp3$dropped$tips #phylogeny
+species.comp3$dropped$unmatched.rows #dataset
+```
+
+#### Absolute eye size vs. organ type (more states)
+
+Here we test absolute eye size vs. bioluminescent organ type with increased states (organ of pesta, lensed photophore, unlensed photophore, none).
+
+```{r lambda0-photo-abs}
+
+#fit model for eye diameter ~ body length (lambda = 0)
+pgls_abs_photo0 <- pgls(eye_av ~ photo3, 
+               data = species.comp3, 
+               lambda = 0.00001, #set lambda to 0
+               bounds=list(lambda=c(0.00001,0.00001)),
+               param.CI = 0.95)
+
+#check model assumptions
+par(mar = c(4,4,2,2))
+par(mfrow = c(2, 2))
+plot(pgls_abs_photo0)
+par(mfrow = c(1, 1))
+
+#main effects
+anova(pgls_abs_photo0)
+
+#parameter estimates
+summary(pgls_abs_photo0)
+```
+
+When lambda is set to 0, there is a significant effect of organ type on absolute eye size.
+
+#### Relative eye size vs. organ type (more states)
+
+Here we test relative eye size vs. bioluminescent organ type with increased states (organ of pesta, lensed photophore, unlensed photophore, none) by treating body size and organ type as covariates.
+ 
+```{r lambda0-photo}
+
+#fit model for eye diameter ~ body length (lambda = 0)
+pgls_photo0 <- pgls(log10(eye_av) ~ log10(length_av) + photo3, 
+               data = species.comp3, 
+               lambda = 0.00001, #set lambda to 0
+               bounds=list(lambda=c(0.00001,0.00001)),
+               param.CI = 0.95)
+
+#check model assumptions
+par(mar = c(4,4,2,2))
+par(mfrow = c(2, 2))
+plot(pgls_photo0)
+par(mfrow = c(1, 1))
+
+#parameter estimates
+summary(pgls_photo0)
+
+anova(pgls_photo0)
+
+#save coefficients of fits as object
+cc_pgls_photo0 <- data.frame(coef(pgls_photo0))
+```
+
+
 
 
 ## Depth distributions
